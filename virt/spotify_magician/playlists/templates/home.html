@@ -1,0 +1,13 @@
+{% extends "master.html" %}
+
+{% block title %}Spotify Magician — Home{% endblock %}
+
+{% block content %}
+
+<div class="flex flex-col">
+    {% for x in data %}
+    <div class="text-black">{{ x }}</div>
+    {% endfor %}
+</div>
+
+{% endblock %}
