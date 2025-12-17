@@ -5,7 +5,7 @@ import base64
 def home(request):
 
   return render(request, "home.html", {"data": [1, 2, 3, 4]})
-#test
+
 
 
 
