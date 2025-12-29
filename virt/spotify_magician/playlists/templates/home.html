@@ -4,10 +4,16 @@
 
 {% block content %}
 
-<div class="flex flex-col">
-    {% for x in data %}
-    <div class="text-black">{{ x }}</div>
-    {% endfor %}
-</div>
+<div class="bg-base size-full absolute">
 
+  <main class="flex items-center justify-center h-screen">
+
+    <a href="{% url 'spotify_login' %}"
+        class="bg-green-500 text-white px-6 py-3 rounded-lg text-lg">
+      Login with Spotify
+    </a>
+    
+  </main>
+
+</div>
 {% endblock %}
