@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib import admin
 from .models import SpotifyProfile, PlaylistConfig
 
-#Design für das Spotify Profil im Admin-Bereich
+'''#Design für das Spotify Profil im Admin-Bereich
 @admin.register(SpotifyProfile)
 class SpotifyProfileAdmin(admin.ModelAdmin):
     # Diese Spalten werden in der Übersicht angezeigt
@@ -17,4 +17,4 @@ class SpotifyProfileAdmin(admin.ModelAdmin):
 class PlaylistConfigAdmin(admin.ModelAdmin):
     list_display = ('user', 'config_type', 'is_active', 'last_updated')
     list_filter = ('config_type', 'is_active') # Filter-Box an der Seite
-    search_fields = ('userusername',)
+    search_fields = ('userusername',)'''
