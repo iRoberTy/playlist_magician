@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
+from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.timezone import make_aware
 import time
 import requests
@@ -143,11 +145,14 @@ def spotify_callback(request):
     headers = {
         "Authorization": f"Bearer {token_data["access_token"]}"
     }
-    user_id = requests.get(f"{SPOTIFY_API_BASE}/me", headers=headers)
+    user = requests.get(f"{SPOTIFY_API_BASE}/me", headers=headers)
     # Check if succesfully got user_id or hit rate Limit..
-    if user_id.status_code != 200:
+    if user.status_code != 200:
         return redirect("home")
-    request.session["user_id"] = user_id.json()
+    user = user.json()
+    
+    request.session["user_id"] = user["id"]
+    request.session["market"] = user["country"] # For Region based Tracks ---------------
     
     expires_in = timezone.now() + timedelta(seconds=token_data["expires_in"])
     request.session["expires_in"] = int(expires_in.timestamp())
@@ -166,10 +171,14 @@ def spotify_callback(request):
     # Log them in using Django session
     login(request, user)   # creates the sessionid cookie Django expects'''
 
-    return redirect("profile")
+    # get ?next= from the return URL
+    next_url = request.GET.get('next')
+    if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        return redirect(next_url)
+    return redirect('home')  # fallback if no next param
 
 #@login_required # set LOGIN_URL in Settings
-def profile(request):
+def playlist_conf(request):
     start = time.time()
     
     access_token = get_valid_access_token(request)
@@ -190,7 +199,7 @@ def profile(request):
     end = time.time()
     print(end-start)
     
-    return render(request, "profile.html", {
+    return render(request, "playlist_conf.html", {
         "user": user_id,
         "playlists": playlists.json().get("items", []),
     })
@@ -210,9 +219,9 @@ def parse_release_date(date_str):
 def playlist_fav_songs(request):
     access_token = get_valid_access_token(request)
     user_id = request.session.get("user_id")
-    fav_artist_count = request.POST.get("fav_artist_count") if request.POST.get("fav_artist_count") else 5  # Optional User Input
+    fav_artist_count = int(request.POST.get("fav_artist_count")) if request.POST.get("fav_artist_count") else 5  # Optional User Input
     regelmäßig_aktualisieren = True
-    
+    print(fav_artist_count)
     # Backend Fetch Configuration
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -228,25 +237,30 @@ def playlist_fav_songs(request):
     # Check if succesfully got artists or hit rate Limit..
     if artists_resp.status_code != 200:
         print(f"/me/top/artists endpoint failed with status code: {albums_resp.status_code}")
-        return redirect("home")
+        return JsonResponse({
+            "success": False,
+        })
     
     artists_list = artists_resp.json()
     
     # Check if artists count == fav_artist_count
     if len(artists_list.get("items")) != fav_artist_count:
         print("actually existing artist count doesnt match the user given number")
-        return redirect("home")
+        return JsonResponse({
+            "success": False,
+        })
     
     # Get 50 Tracks
     PLAYLIST_MAX_TRACKS = 50
     track_uris = []
-    num_artists = len(artists_list)
+    num_artists = len(artists_list["items"])
+
     tracks_per_artist = max(1, PLAYLIST_MAX_TRACKS // num_artists) # 50 Tracks evenly distributed between available artists (min 1 per)
-    
+    print(tracks_per_artist)
     for artist in artists_list["items"]:
         params = {
             "include_groups": "album, single", # album - single - appears_on - compilation
-            #"market": "DE", # "SO 3166-1 alpha-2" country code (optional)
+            "market": request.session.get("market"),
             "limit": 10, 
             "offset": 0
         }
@@ -255,7 +269,9 @@ def playlist_fav_songs(request):
         # Check if succesfully got albums or hit rate Limit..
         if albums_resp.status_code != 200:
             print(f"/artists/(artistid)/albums endpoint failed with status code: {albums_resp.status_code}")
-            return redirect("home")
+            return JsonResponse({
+                "success": False,
+            })
         
         albums_list = albums_resp.json()
         
@@ -292,38 +308,48 @@ def playlist_fav_songs(request):
     track_uris = track_uris[:50]
 
     # Create a new Playlist for User
+    headers = { 
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json" 
+    }
     params = {
-            "name": "Fav Artists Songs",
-            "public": True, # needs scope "playlist-modify-private" or "playlist-modify-public"
-            "collaborative": False, # needs scope "playlist-modify-private" or "playlist-modify-public"
-            "description": "This Playlist includes your favourite Artists recent Tracks"
-        }
-    create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/users/{user_id}/paylists", headers=headers, params=params) # ---------- Create new Playlist for User ---------- (Playlists: "Create Playlist" - endpoint)
+        "name": "Fav Artists Songs",
+        "public": True, # needs scope "playlist-modify-private" or "playlist-modify-public"
+        "collaborative": False, # needs scope "playlist-modify-private" or "playlist-modify-public"
+        "description": "This Playlist includes your favourite Artists recent Tracks"
+    }
+    create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/me/playlists", headers=headers, json=params) # ---------- Create new Playlist for User ---------- (Playlists: "Create Playlist" depreciated (so unknown source) - endpoint)
     
-    if create_playlist_resp.status_code != 200:
-        print(f"/users/(userid)/paylists endpoint failed with status code: {create_playlist_resp.status_code}")
-        return redirect("home")
+    if create_playlist_resp.status_code not in (201, 200):
+        print(f"/users/(userid)/playlists endpoint failed with status code: {create_playlist_resp.status_code}")
+        return JsonResponse({
+            "success": False,
+        })
     
     playlist_id = create_playlist_resp.json()["id"]
-    
+
     # Add Tracks to the created Playlist
-    uris = ",".join(f"spotify:track:{uri}" for uri in track_uris)   # Comma seperated uris list
+    uris = [uri for uri in track_uris]   # Comma seperated uris list
     params = {
             "playlist_id": playlist_id,
             "position": 0, # which position in the Playlist List to append
-            "collaborative": False, # needs scope "playlist-modify-private" or "playlist-modify-public"
             "uris": uris
         }
-    create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/tracks", headers=headers, params=params) # ---------- Create new Playlist for User ---------- (Playlists: "Create Playlist" - endpoint)
+    create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/tracks", headers=headers, json=params) # ---------- Add Tracks to the created Playlist ---------- (Playlists: "Add Items to Playlist" - endpoint)
     
-    if create_playlist_resp.status_code != 200:
+    if create_playlist_resp.status_code not in (200, 201):
         print(f"/playlists/(playlist_id)/tracks endpoint failed with status code: {create_playlist_resp.status_code}")
-        return redirect("home")
+        return JsonResponse({
+            "success": False,
+        })
     
     # Store Configuration Data in DB here for regelmäßig Playlist ändern
     
     print("successfully create Playlist")
-    #return redirect("success")
+    return JsonResponse({
+        "success": True,
+        "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}"
+    })
         
     
     
