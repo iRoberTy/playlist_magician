@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -121,3 +121,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LOGIN_URL = 'spotify_login'
+SPOTIFY_CLIENT_ID = "b90fcd35292d4b59983b191d99496714"
+SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"
+SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
