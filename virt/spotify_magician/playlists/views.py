@@ -178,6 +178,7 @@ def spotify_callback(request):
     return redirect('home')  # fallback if no next param
 
 #@login_required # set LOGIN_URL in Settings
+# Not used
 def playlist_conf(request):
     start = time.time()
     
@@ -216,6 +217,7 @@ def parse_release_date(date_str):
     return None
 
 # Apply Playlist configuration (Aufgabe 1)
+#@login_required
 def playlist_fav_songs(request):
     access_token = get_valid_access_token(request)
     user_id = request.session.get("user_id")
