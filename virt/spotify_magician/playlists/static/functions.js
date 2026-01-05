@@ -1,8 +1,3 @@
-const mobilemenuclosed = document.querySelector('#mobilemenuclosed');
-const mobilemenuopened = document.querySelector('#mobilemenuopened');
-const mobilemenu = document.querySelector('#mobilemenu');
-const button = document.querySelector('#button');
-
 function menubutton() {
     if (mobilemenu.classList.contains('hidden')) {
         mobilemenu.classList.remove('hidden');
