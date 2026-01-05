@@ -1,5 +1,3 @@
-from django.db import models
-
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
@@ -25,6 +23,15 @@ class PlaylistConfig(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     config_type = models.CharField(max_length=20, choices=PLAYLIST_TYPES)
     
+    # --- WICHTIGE ERGÄNZUNG FÜR AUTOMATISIERUNG ---
+    # Damit wir wissen, welche Playlist auf Spotify wir updaten müssen:
+    spotify_playlist_id = models.CharField(max_length=255, null=True, blank=True)
+    # Soll diese Config aktiv regelmäßig ausgeführt werden?
+    is_active = models.BooleanField(default=True)
+    # Wann wurde sie zuletzt aktualisiert?
+    last_updated = models.DateTimeField(auto_now=True)
+    # -----------------------------------------------
+
     # Für Jogging 
     target_bpm_min = models.IntegerField(default=120, null=True, blank=True)
     target_bpm_max = models.IntegerField(default=160, null=True, blank=True)
