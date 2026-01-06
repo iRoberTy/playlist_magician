@@ -13,14 +13,15 @@ import base64
 import hashlib
 import secrets
 import urllib.parse
+import random
 
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token" # Refresh Access Token
 SPOTIFY_API_BASE = "https://api.spotify.com/v1"
 
 # Should be in Settings
-SPOTIFY_CLIENT_ID = "b90fcd35292d4b59983b191d99496714"
-SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"
+SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
 SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
@@ -254,9 +255,8 @@ def playlist_fav_songs(request):
     
     # Get 50 Tracks
     PLAYLIST_MAX_TRACKS = 50
-    track_uris = []
     num_artists = len(artists_list["items"])
-
+    track_uris = []
     tracks_per_artist = max(1, PLAYLIST_MAX_TRACKS // num_artists) # 50 Tracks evenly distributed between available artists (min 1 per)
     print(tracks_per_artist)
     for artist in artists_list["items"]:
@@ -301,13 +301,19 @@ def playlist_fav_songs(request):
             for t in album_tracks:
                 if len(artist_track_ids) >= tracks_per_artist:
                     break
-                artist_track_ids.append(t["uri"])
-
-        # Add to global list
-        track_uris.extend(artist_track_ids)
-
+                artist_track_ids.append({
+                    "uri": t["uri"],
+                    "date": album["release_date"]
+                    })
+                
+    random.shuffle(track_uris)
     # Trim to exactly 50 if needed
     track_uris = track_uris[:50]
+
+    track_uris.sort(key=lambda x: parse_release_date(x["date"]) or datetime.min, reverse=True)
+    uris = [item["uri"] for item in track_uris] #
+    # Add to global list
+    track_uris.extend(artist_track_ids)
 
     # Create a new Playlist for User
     headers = { 

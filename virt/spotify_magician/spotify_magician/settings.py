@@ -125,3 +125,6 @@ LOGIN_URL = 'spotify_login'
 SPOTIFY_CLIENT_ID = "b90fcd35292d4b59983b191d99496714"
 SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"
 SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
+SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
+SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
