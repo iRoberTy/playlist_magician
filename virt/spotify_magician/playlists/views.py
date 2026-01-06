@@ -1,5 +1,7 @@
+import random
 from django.shortcuts import render, redirect
 from django.conf import settings
+from .sanitize import *
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -19,9 +21,9 @@ SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token" # Refresh Access To
 SPOTIFY_API_BASE = "https://api.spotify.com/v1"
 
 # Should be in Settings
-SPOTIFY_CLIENT_ID = "b90fcd35292d4b59983b191d99496714"
-SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+SPOTIFY_CLIENT_ID = settings.SPOTIFY_CLIENT_ID
+# SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"    # Not needed for PKCE flow
+SPOTIFY_REDIRECT_URI = settings.SPOTIFY_REDIRECT_URI
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
@@ -57,18 +59,24 @@ def get_valid_access_token(request):
     access_token = request.session.get("access_token")
     refresh_token = request.session.get("refresh_token")
     expires_in = request.session.get("expires_in")
-    # Get from DB? ------------------------
 
-    if not refresh_token:
-        # Should never happen
-        return None
+    # --- DB LOGIK (AUSKOMMENTIERT FÜR SPÄTER) ---
+    # if not refresh_token:
+    #    # Versuch, Token aus DB zu laden anhand User-Session oder ID
+    #    pass
+    # --------------------------------------------
+
 
     # If access token exists AND is still valid → use it
     if access_token and expires_in and is_access_token_valid(expires_in):
         return access_token
 
     # Otherwise refresh
-    token_data = refresh_access_token(refresh_token)
+    try:
+        token_data = refresh_access_token(refresh_token)
+    except Exception as e:
+        print(f"Refresh failed: {e}")
+        return None
 
     request.session["access_token"] = token_data["access_token"]
     expires_in = timezone.now() + timedelta(seconds=token_data["expires_in"])
@@ -77,27 +85,25 @@ def get_valid_access_token(request):
     # Spotify may rotate refresh tokens
     if "refresh_token" in token_data:
         request.session["refresh_token"] = token_data["refresh_token"]
-        # Update DB? -------------------------
+        # --- DB UPDATE (AUSKOMMENTIERT) ---
+        # Update user model with new refresh token
+        # ----------------------------------
 
     return token_data["access_token"]
 
-# Helper Function for Login
-def generate_code_verifier():
-    return secrets.token_urlsafe(64)
-
-# Helper Function for Login
-def generate_code_challenge(code_verifier):
-    digest = hashlib.sha256(code_verifier.encode()).digest()
-    return base64.urlsafe_b64encode(digest).decode().rstrip("=")
-
 # Main Login Function (redirect to Spotify Url for permissions)
 def spotify_login(request):
-    code_verifier = generate_code_verifier()
-    code_challenge = generate_code_challenge(code_verifier)
+    code_verifier = secrets.token_urlsafe(64)
+    digest = hashlib.sha256(code_verifier.encode()).digest()
+    code_challenge = base64.urlsafe_b64encode(digest).decode().rstrip("=")
 
     request.session["code_verifier"] = code_verifier
+    
+    # State für CSRF Schutz empfohlen (hier der Einfachheit halber optional, aber Best Practice)
+    state = secrets.token_urlsafe(16)
+    request.session["oauth_state"] = state
 
-    scope = "user-read-private playlist-read-private user-top-read playlist-modify-public playlist-modify-private"
+    scope = "user-read-private user-library-read playlist-read-private user-top-read playlist-modify-public playlist-modify-private"
 
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
@@ -106,6 +112,7 @@ def spotify_login(request):
         "scope": scope,
         "code_challenge_method": "S256",
         "code_challenge": code_challenge,
+        "state": state
     }
 
     url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
@@ -115,8 +122,8 @@ def spotify_login(request):
 def spotify_callback(request):
     code = request.GET.get("code")
     code_verifier = request.session.get("code_verifier")
-
-    if not code or not code_verifier:
+    
+    if not code or not code_verifier or request.GET.get("state") != request.session.get("oauth_state"):
         return redirect("home")
 
     data = {
@@ -127,9 +134,7 @@ def spotify_callback(request):
         "code_verifier": code_verifier,
     }
 
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
     response = requests.post(SPOTIFY_TOKEN_URL, data=data, headers=headers)
     # Check if successful or hit rate Limit...
@@ -142,9 +147,7 @@ def spotify_callback(request):
     request.session["access_token"] = token_data["access_token"]
     request.session["refresh_token"] = token_data["refresh_token"]
     
-    headers = {
-        "Authorization": f"Bearer {token_data["access_token"]}"
-    }
+    headers = {"Authorization": f"Bearer {token_data["access_token"]}"}
     user = requests.get(f"{SPOTIFY_API_BASE}/me", headers=headers)
     # Check if succesfully got user_id or hit rate Limit..
     if user.status_code != 200:
@@ -154,15 +157,15 @@ def spotify_callback(request):
     request.session["user_id"] = user["id"]
     request.session["market"] = user["country"] # For Region based Tracks ---------------
     
-    expires_in = timezone.now() + timedelta(seconds=token_data["expires_in"])
+    expires_in = timezone.now() + timedelta(seconds=token_data.get("expires_in", 3600))
     request.session["expires_in"] = int(expires_in.timestamp())
     
     print(token_data["scope"], token_data["expires_in"])
     
-    # Store in DB (This code works if we have User DB field)
+    # --- DB SAVE (AUSKOMMENTIERT) ---
     '''# Get Spotify UserID
     # Get or create new user
-    user, created = User.objects.get_or_create(
+    user, created = User.objects.update_or_create(
         id=user_id.json(),
         #defaults={'access_token': token_data["access_token"], 
         #        'refresh_token': token_data.get("refresh_token")}
@@ -170,6 +173,7 @@ def spotify_callback(request):
     
     # Log them in using Django session
     login(request, user)   # creates the sessionid cookie Django expects'''
+    # --------------------------------
 
     # get ?next= from the return URL
     next_url = request.GET.get('next')
@@ -179,9 +183,7 @@ def spotify_callback(request):
 
 #@login_required # set LOGIN_URL in Settings
 # Not used
-def playlist_conf(request):
-    start = time.time()
-    
+def playlist_conf(request): 
     access_token = get_valid_access_token(request)
 
     headers = {
@@ -196,10 +198,7 @@ def playlist_conf(request):
     # Check if succesfully got user_id or hit rate Limit..
     if playlists.status_code != 200:
         return redirect("home")
-    
-    end = time.time()
-    print(end-start)
-    
+
     return render(request, "playlist_conf.html", {
         "user": user_id,
         "playlists": playlists.json().get("items", []),
@@ -219,49 +218,57 @@ def parse_release_date(date_str):
 # Apply Playlist configuration (Aufgabe 1)
 #@login_required
 def playlist_fav_songs(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request"})
+
     access_token = get_valid_access_token(request)
     user_id = request.session.get("user_id")
-    fav_artist_count = int(request.POST.get("fav_artist_count")) if request.POST.get("fav_artist_count") else 5  # Optional User Input
-    regelmäßig_aktualisieren = True
-    print(fav_artist_count)
+
+    if not access_token or not user_id:
+        return redirect("spotify_login")
+
+    # Sanitize User Input
+    form = playlist_fav_songs_form(request.POST)
+    if not form.is_valid():
+        return JsonResponse({"success": False, "error": "Invalid form data", "details": form.errors})
+    fav_artist_count = form.cleaned_data["fav_artist_count"] # User Input
+    song_count = form.cleaned_data["song_count"] # User Input
+
     # Backend Fetch Configuration
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
+    headers = {"Authorization": f"Bearer {access_token}"}
     params = {
         "time_range": "medium_term", # Timerange of fav_artists/songs: long_term (1y) - medium_term (6m) - short_term (4w)
         "limit": fav_artist_count,
         "offset": 0
     }
     
+    # --- LOGIK: Playlist Update vs Neu ---
+    # Da wir keine DB haben, schauen wir in die Session, ob wir in DIESER Sitzung schon eine Playlist erstellt haben.
+    playlist_id = request.session.get("current_session_playlist_id")
+    # Falls wir eine DB hätten, würden wir hier:
+    # playlist_id = PlaylistConfig.objects.get(user=user_id).last_playlist_id
+    
     artists_resp = requests.get(f"{SPOTIFY_API_BASE}/me/top/artists", headers=headers, params=params) # ---------------- Get fav Artists --------------- (Users: "Get User's Top Items" - endpoint)
     
     # Check if succesfully got artists or hit rate Limit..
     if artists_resp.status_code != 200:
         print(f"/me/top/artists endpoint failed with status code: {albums_resp.status_code}")
-        return JsonResponse({
-            "success": False,
-        })
+        return JsonResponse({"success": False, "error": "Failed to fetch artists"})
     
     artists_list = artists_resp.json()
     
-    # Check if artists count == fav_artist_count
-    if len(artists_list.get("items")) != fav_artist_count:
-        print("actually existing artist count doesnt match the user given number")
-        return JsonResponse({
-            "success": False,
-        })
-    
     # Get 50 Tracks
-    PLAYLIST_MAX_TRACKS = 50
-    track_uris = []
+    PLAYLIST_MAX_TRACKS = song_count
+    track_data = [] # Stores {uri, date}
     num_artists = len(artists_list["items"])
+    if num_artists == 0:
+         return JsonResponse({"success": False, "error": "No artists found"})
 
     tracks_per_artist = max(1, PLAYLIST_MAX_TRACKS // num_artists) # 50 Tracks evenly distributed between available artists (min 1 per)
-    print(tracks_per_artist)
+    
     for artist in artists_list["items"]:
         params = {
-            "include_groups": "album, single", # album - single - appears_on - compilation
+            "include_groups": "album,single,appears_on", # album - single - appears_on - compilation
             "market": request.session.get("market"),
             "limit": 10, 
             "offset": 0
@@ -271,9 +278,7 @@ def playlist_fav_songs(request):
         # Check if succesfully got albums or hit rate Limit..
         if albums_resp.status_code != 200:
             print(f"/artists/(artistid)/albums endpoint failed with status code: {albums_resp.status_code}")
-            return JsonResponse({
-                "success": False,
-            })
+            return JsonResponse({"success": False, "error": "Failed to fetch albums"})
         
         albums_list = albums_resp.json()
         
@@ -284,11 +289,9 @@ def playlist_fav_songs(request):
         )
 
         # Collect tracks for this artist
-        artist_track_ids = []
-
+        artist_tracks_found = 0
         for album in albums_sorted:
-            if len(artist_track_ids) >= tracks_per_artist:
-                break
+            if artist_tracks_found >= tracks_per_artist: break
 
             album_tracks_resp = requests.get(f"{SPOTIFY_API_BASE}/albums/{album['id']}/tracks",headers=headers) # ------------ Get Album Tracks --------- (Albums: "Get Album Tracks" - endpoint)
 
@@ -299,67 +302,241 @@ def playlist_fav_songs(request):
             album_tracks = album_tracks_resp.json()["items"]
 
             for t in album_tracks:
-                if len(artist_track_ids) >= tracks_per_artist:
+                if artist_tracks_found >= tracks_per_artist:
                     break
-                artist_track_ids.append(t["uri"])
+                track_data.append({
+                    "uri": t["uri"],
+                    "date": album["release_date"]
+                })
+                artist_tracks_found += 1
 
-        # Add to global list
-        track_uris.extend(artist_track_ids)
-
-    # Trim to exactly 50 if needed
-    track_uris = track_uris[:50]
-
-    # Create a new Playlist for User
-    headers = { 
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json" 
-    }
-    params = {
-        "name": "Fav Artists Songs",
-        "public": True, # needs scope "playlist-modify-private" or "playlist-modify-public"
-        "collaborative": False, # needs scope "playlist-modify-private" or "playlist-modify-public"
-        "description": "This Playlist includes your favourite Artists recent Tracks"
-    }
-    create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/me/playlists", headers=headers, json=params) # ---------- Create new Playlist for User ---------- (Playlists: "Create Playlist" depreciated (so unknown source) - endpoint)
+    random.shuffle(track_data)
+    #track_data.sort(key=lambda x: parse_release_date(x["date"]) or datetime.min, reverse=True)
     
-    if create_playlist_resp.status_code not in (201, 200):
-        print(f"/users/(userid)/playlists endpoint failed with status code: {create_playlist_resp.status_code}")
-        return JsonResponse({
-            "success": False,
-        })
-    
-    playlist_id = create_playlist_resp.json()["id"]
+    final_uris = [t["uri"] for t in track_data]
 
-    # Add Tracks to the created Playlist
-    uris = [uri for uri in track_uris]   # Comma seperated uris list
-    params = {
-            "playlist_id": playlist_id,
-            "position": 0, # which position in the Playlist List to append
-            "uris": uris
+    # Check if Playlist exists
+    if playlist_id:
+        # Get Playlist Details to verify ownership
+        playlist_resp = requests.get(f"{SPOTIFY_API_BASE}/playlists/{playlist_id}", headers=headers) # ---------------- Get Playlist Details --------------- (Playlists: "Get Playlist" - endpoint)
+        
+        if playlist_resp.status_code != 200:
+            print(f"/playlists/(playlistid) endpoint failed with status code: {playlist_resp.status_code}")
+            playlist_id = None  # Reset to create new
+        
+        else:
+            playlist_info = playlist_resp.json()
+            if playlist_info["owner"]["id"] != user_id:
+                # Not the owner, cannot update
+                playlist_id = None
+            else:
+                # Follow Playlist if not already following
+                follow_pl = requests.get(f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/followers/contains", headers=headers)
+                if follow_pl.status_code == 200:
+                    is_following = follow_pl.json()[0]
+                    if not is_following:
+                        # Follow the playlist
+                        follow_resp = requests.put(f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/followers", headers=headers)
+                        if follow_resp.status_code != 200:
+                            print(f"Failed to follow playlist with status code: {follow_resp.status_code}")
+                else:
+                    # Could not verify following status
+                    playlist_id = None
+                            
+    # 4. Create Playlist if not found
+    if not playlist_id: 
+        # Create a new Playlist for User
+        headers = { 
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json" 
         }
-    create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/tracks", headers=headers, json=params) # ---------- Add Tracks to the created Playlist ---------- (Playlists: "Add Items to Playlist" - endpoint)
+        params = {
+            "name": "My Fav Artist Mix",
+            "public": True, # needs scope "playlist-modify-private" or "playlist-modify-public"
+            "collaborative": False, # needs scope "playlist-modify-private" or "playlist-modify-public"
+            "description": "This Playlist includes your favourite Artists recent Tracks created by the Spotify Magician Website"
+        }
+        create_playlist_resp = requests.post(f"{SPOTIFY_API_BASE}/me/playlists", headers=headers, json=params) # ---------- Create new Playlist for User ---------- (Playlists: "Create Playlist" depreciated (so unknown source) - endpoint)
+        
+        if create_playlist_resp.status_code not in (201, 200):
+            print(f"/users/(userid)/playlists endpoint failed with status code: {create_playlist_resp.status_code}")
+            return JsonResponse({
+                "success": False,
+            })
+        
+        playlist_id = create_playlist_resp.json()["id"]
+        request.session["current_session_playlist_id"] = playlist_id # Save for this session
     
-    if create_playlist_resp.status_code not in (200, 201):
-        print(f"/playlists/(playlist_id)/tracks endpoint failed with status code: {create_playlist_resp.status_code}")
-        return JsonResponse({
-            "success": False,
-        })
+    # Add Tracks (Replace logic is usually a PUT request with 'uris', but POST adds to bottom)
+    # Um "Update" sauber zu machen, nutzen wir den replace endpoint:
+    replace_url = f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/tracks"
+    # PUT ersetzt den ganzen Inhalt -> Perfekt für Update
+    add_resp = requests.put(replace_url, headers=headers, json={"uris": final_uris}) 
     
-    # Store Configuration Data in DB here for regelmäßig Playlist ändern
-    
-    print("successfully create Playlist")
+    if add_resp.status_code not in (200, 201):
+         # Fallback to POST if PUT fails (manchmal Berechtigungssache)
+         requests.post(replace_url, headers=headers, json={"uris": final_uris})
+
     return JsonResponse({
         "success": True,
         "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}"
     })
+# Bug in playlist_fav_songs: If not enough artist tracks found--> Max playlist songs not reached
+
+
+#@login_required # If using DB        
+def jogging_playlist(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Invalid request"})
+
+    access_token = get_valid_access_token(request)
+    user_id = request.session.get("user_id")
+
+    if not access_token or not user_id:
+        return redirect("spotify_login")
+
+    # -----------------------------
+    # Eingaben aus Formular
+    # -----------------------------
+    
+    # Sanitize User Input
+    form = Jogging_Playlist_Form(request.POST)
+    if not form.is_valid():
+        print(form.errors)
+        return JsonResponse({"success": False, "error": "Invalid form data", "details": form.errors})
+    bpm_min = form.cleaned_data["bpm_min"]
+    bpm_max = form.cleaned_data["bpm_max"]
+    energy_level = form.cleaned_data["energy_level"] / 100  # Spotify: 0.0–1.0
+    max_playtime = form.cleaned_data["max_playtime"] * 60 * 1000  # Minuten → ms
+    base_playlists = request.POST.getlist("source_playlists")
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    # -----------------------------
+    # 1. Tracks aus allen Playlists sammeln
+    # -----------------------------
+    tracks = []
+
+    for playlist_id in base_playlists:
+        url = f"{SPOTIFY_API_BASE}/playlists/{str(playlist_id)}/tracks"
+        params = {"limit": 100}
+
+        while url:
+            r = requests.get(url, headers=headers, params=params).json()
+            for item in r["items"]:
+                track = item.get("track")
+                if track and track.get("id"):
+                    tracks.append(track)
+            url = r.get("next")
+
+    if not tracks:
+        return JsonResponse({"success": False, "error": "Keine Tracks gefunden"})
+
+    # -----------------------------
+    # 2. Audio-Features abrufen
+    # -----------------------------
+    track_ids = [t["id"] for t in tracks]
+    features = {}
+
+    for i in range(0, len(track_ids), 100):
+        batch = track_ids[i:i+100]
+        r = requests.get(
+            f"{SPOTIFY_API_BASE}/audio-features",
+            headers=headers,
+            params={"ids": ",".join(batch)}
+        )
+        if r.status_code != 200:
+            print(f"/audio-features endpoint failed with status code: {r.status_code}")
+            return JsonResponse({"success": False})
+        r = r.json()
         
+        for f in r["audio_features"]:
+            if f:
+                features[f["id"]] = f
+
+    # -----------------------------
+    # 3. Filtern nach BPM & Energie
+    # -----------------------------
+    filtered = []
+
+    for track in tracks:
+        f = features.get(track["id"])
+        if not f:
+            continue
+
+        if bpm_min <= f["tempo"] <= bpm_max and f["energy"] >= energy_level:
+            filtered.append({
+                "id": track["id"],
+                "tempo": f["tempo"],
+                "duration": track["duration_ms"]
+            })
+
+    if not filtered:
+        return JsonResponse({"success": False, "error": "Keine passenden Songs gefunden"})
+
+    # -----------------------------
+    # 4. Sortieren (aufsteigend BPM)
+    # -----------------------------
+    filtered.sort(key=lambda x: x["tempo"])
+
+    # -----------------------------
+    # 5. Maximale Gesamtlaufzeit beachten
+    # -----------------------------
+    final_tracks = []
+    total_duration = 0
+
+    for t in filtered:
+        if total_duration + t["duration"] > max_playtime:
+            break
+        final_tracks.append(t["id"])
+        total_duration += t["duration"]
+
+    # -----------------------------
+    # 6. Playlist erstellen
+    # -----------------------------
+    playlist_data = {
+        "name": "Jogging Playlist",
+        "description": "Automatisch generiert nach BPM & Energie",
+        "public": False
+    }
+
+    r = requests.post(
+        f"{SPOTIFY_API_BASE}/users/{user_id}/playlists",
+        headers={**headers, "Content-Type": "application/json"},
+        json=playlist_data
+    )
+
+    if r.status_code != 200:
+        print(f"/users/(user_id)/playlists endpoint failed with status code: {r.status_code}")
+        return JsonResponse({"success": False})
+    r = r.json()
+        
+    playlist_id = r["id"]
+
+    # -----------------------------
+    # 7. Tracks hinzufügen
+    # -----------------------------
+    replace_url = f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/tracks"
+    # PUT ersetzt den ganzen Inhalt -> Perfekt für Update
+    add_resp = requests.put(replace_url, headers=headers, json={"uris": final_tracks}) 
     
-    
+    if add_resp.status_code not in (200, 201):
+        # Fallback to POST if PUT fails (manchmal Berechtigungssache)
+        requests.post(replace_url, headers=headers, json={"uris": final_tracks})
+
+    # -----------------------------
+    # 8. Erfolg zurückgeben
+    # -----------------------------
+    return JsonResponse({
+        "success": True,
+        "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}"
+    })
+
 def logout_view(request):
-    request.session.flush() # Same as logout
-    #logout(request)
+    request.session.flush()
+    # DB logout -----------
+    # logout(request)
     return redirect("home")
 
-# Fragen zu klären
-# access_token + refresh_token nur in db speichern, wenn wir die Eigenschaft mit "Playlists fortlaufend updaten" erfüllen wollen 
-# ODER Konfiguration speichern, sonst --> Sicherheitsrisiko (Ist nur mit Cookies/Session umsetzbar)
