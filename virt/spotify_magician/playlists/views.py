@@ -22,7 +22,7 @@ SPOTIFY_API_BASE = "https://api.spotify.com/v1"
 
 # Should be in Settings
 SPOTIFY_CLIENT_ID = settings.SPOTIFY_CLIENT_ID
-# SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"    # Not needed for PKCE flow
+# SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"    # Not needed for PKCE flow -
 SPOTIFY_REDIRECT_URI = settings.SPOTIFY_REDIRECT_URI
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
