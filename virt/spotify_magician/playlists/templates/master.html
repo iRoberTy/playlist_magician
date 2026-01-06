@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     {% load static %}
@@ -8,21 +8,22 @@
        <style type="text/tailwindcss"> 
         @theme {
           --color-base: #0d0f17;
-          --color-card: #12141f;
-          --color-card-light: #1a1d2a;
+          --color-card: #84f1aa;
+          --color-card-light: #14a547;
           --color-border-light: #2a2e3f;
           --color-text-primary: #1d1d1dff;
           --color-text-accent: #cdffbeff;
           --color-image: #746ee3ff;
-          --color-accent: #0a9700ff;
+          --color-accent: #13823b;
           --color-accent-2: #7c3aed;
           --color-success: #22c55e;
-          --color-master: #10bd00ff;
+          --color-master: #1DB954;
         }
     </style>
     <title>{% block title %}Spotify Magician{% endblock %}</title>
 </head>
-<body>
+
+<!-- Color Master ist die Farbe von Spotify. Wird für Header und Footer verwendet -->
 
 <!-- ToDo: Aktiven Link anders darstellen; Titel vertikal zentrieren -->
 <body class="min-h-screen flex flex-col">
@@ -39,7 +40,7 @@
                             <img class="h-8 w-auto rounded-full" src="{% static '/img/icon.jpeg' %}">
                         </div>
 
-                        <h1 class="text-xl text-text-primary font-bold ml-4 mt-1">Spotify Magician</h1>
+                        <h1 class="text-2xl text-text-primary font-bold ml-4 ">Spotify Magician</h1>
 
 
                         <!-- Navbar Desktop -->
@@ -81,10 +82,10 @@
         </nav>
     </header>
 
-    <div class="flex-grow"> <!-- Flex grow damit die Seite voll ausgefüllt ist und der Footer am Ende angezeigt wird -->
-    {% block content %} 
-    {% endblock %}
-    </div>
+<div class="flex-grow mx-auto max-w-7xl px-[clamp(1rem,4vw,6rem)] py-[clamp(1rem,4vw,6rem)]"> <!-- Flex grow damit die Seite voll ausgefüllt ist und der Footer am Ende angezeigt wird -->
+  {% block content %} 
+  {% endblock %}
+</div>
 
     <!-- Footer mit Link zum Impressum -->
     <footer class="bg-master text-text-primary p-2">
@@ -102,5 +103,5 @@
         </div>
     </footer>
    <script src="{% static '/functions.js' %}"></script>
-    </body>
+  </body>
 </html>
