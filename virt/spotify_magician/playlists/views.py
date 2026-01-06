@@ -20,8 +20,8 @@ SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token" # Refresh Access To
 SPOTIFY_API_BASE = "https://api.spotify.com/v1"
 
 # Should be in Settings
-SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
-SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
+SPOTIFY_CLIENT_ID = settings.SPOTIFY_CLIENT_ID
+SPOTIFY_CLIENT_SECRET = settings.SPOTIFY_CLIENT_SECRET
 SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
