@@ -146,9 +146,9 @@ if not DEBUG:
 
 # Datenbank Konfiguration für Render (automatisch)
 # Ersetzt die lokale SQLite DB, wenn wir auf Render sind
-DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
-    )
-}
+#DATABASES = {
+#    'default': dj_database_url.config(
+#        default='sqlite:///db.sqlite3',
+#        conn_max_age=600
+#    )
+#}
