@@ -16,7 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # dein-app-name bei deployment ändern
-ALLOWED_HOSTS = ['dein-app-name.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,7 +25,7 @@ ALLOWED_HOSTS = ['dein-app-name.onrender.com', '127.0.0.1', 'localhost']
 SECRET_KEY = 'django-insecure-9+n7*u!^rfus)cr-vts9mfobd450la=2j@mt42k1=-d8f^@w@3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG') == 'True'
+DEBUG = = True
 
 # Application definition
 
