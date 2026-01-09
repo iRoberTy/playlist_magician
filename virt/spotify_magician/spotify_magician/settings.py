@@ -15,6 +15,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# dein-app-name bei deployment ändern
+ALLOWED_HOSTS = ['dein-app-name.onrender.com', '127.0.0.1', 'localhost']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -23,10 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9+n7*u!^rfus)cr-vts9mfobd450la=2j@mt42k1=-d8f^@w@3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+DEBUG = os.environ.get('DEBUG') == 'True'
 
 # Application definition
 
@@ -43,6 +42,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware", # für Bilder braucht Django whitenoise
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -115,7 +115,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -128,3 +130,25 @@ SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
 SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
 SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
+
+if not DEBUG:
+    # Erzwingt HTTPS (leitet http Anfragen auf https um)
+    SECURE_SSL_REDIRECT = True
+    
+    # Cookies werden nur über HTTPS gesendet
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Browser soll sich merken: "Diese Seite nur noch sicher aufrufen" (HSTS)
+    SECURE_HSTS_SECONDS = 31536000 # 1 Jahr
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Datenbank Konfiguration für Render (automatisch)
+# Ersetzt die lokale SQLite DB, wenn wir auf Render sind
+DATABASES = {
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
+}
