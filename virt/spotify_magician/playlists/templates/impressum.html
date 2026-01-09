@@ -1,0 +1,59 @@
+{% extends "master.html" %}
+
+{% block title %}Spotify Magician — Home{% endblock %}
+
+{% block content %}
+{% load static %}
+<body>
+        <!-- Überschrift -->
+    <div class="pt-8">
+        <h1 class="font-semibold text-xl">Impressum</h1>
+    </div>
+
+    <!-- Impressum und Kontakt -->
+    <div class="pt-6">
+        Angaben gemäß § 5 DDG<br>
+        Playlistmagician GMBH<br>
+        c/o Beispielbüro<br>
+        Musterweg<br>
+        12345 Musterstadt<br><br>
+        Vertreten durch:<br>
+        Max Muster<br><br>
+        Kontakt:<br>
+        Telefon: 01234-789456<br>
+        Fax: 1234-56789<br>
+        E-Mail: max@muster.de<br><br>
+        Umsatzsteuer-ID:<br>
+        Umsatzsteuer-Identifikationsnummer gemäß §27a Umsatzsteuergesetz: Musterustid.<br><br>
+        Wirtschafts-ID:<br>
+        Musterwirtschaftsid<br>
+        Aufsichtsbehörde:<br>
+        Musteraufsicht Musterstadt<br><br>
+        Verbraucherstreitbeilegung / Universalschlichtungsstelle<br>
+        Wir nehmen nicht an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teil und sind dazu auch nicht verpflichtet.<br>
+        Erstellt mit Impressum-Generator.de, dem Tool für Impressum und Datenschutz-Erklärung. Nach einer Vorlage der Kanzlei Hasselbach
+    </div>
+
+    <!-- Privacy -->
+    <div class="pt-10">
+        <h1 class="font-semibold text-xl">Privacy Disclaimer (Datenschutz-Hinweis)</h1>
+    </div>
+    <div class="pt-6">
+        Deine Sicherheit ist uns wichtig. Da wir mit deinem Spotify-Konto interagieren, legen wir transparent offen, wie wir Daten verarbeiten:<br><br>
+        1. Kein Passwort-Zugriff Wir nutzen den offiziellen OAuth 2.0 Standard von Spotify. Das bedeutet: Du gibst dein Passwort nur auf der Seite von Spotify ein. Unsere Anwendung sieht dein Passwort zu keinem Zeitpunkt und speichert es auch nicht.<br><br>
+        2. Welche Daten wir speichern Um die Funktionen bereitzustellen, speichern wir temporär:<br>
+        - Access & Refresh Tokens: Diese erlauben uns, in deinem Namen Playlists zu erstellen.<br>
+        - Spotify User ID: Um deine Konfigurationen deinem Profil zuzuordnen.<br><br>
+        3. Nutzung der Daten Deine Daten werden ausschließlich funktional genutzt:<br>
+        - Zum Abrufen deiner Bibliothek (Leserechte).<br>
+        - Zum Analysieren der Audio-Features (BPM, Energie).<br>
+        - Zum Erstellen und Befüllen der neuen Playlist (Schreibrechte).<br><br>
+        4. Datenlöschung Dies ist ein studentisches Prototyp-Projekt. Alle Daten werden nach Projektende (oder auf deinen expliziten Wunsch hin) aus unserer Datenbank gelöscht.
+    </div>
+    <a href="" class="text-blue-500 hover:text-blue-800 transition">Klicke hier um deine Daten zu löschen.</a>
+    <div>
+        Du kannst die Berechtigung zudem jederzeit über dein Spotify-Profil (Apps-Einstellungen) entziehen.
+    </div>
+</body>
+<!--Link für Datenlöschung einfügen-->
+{% endblock %}
