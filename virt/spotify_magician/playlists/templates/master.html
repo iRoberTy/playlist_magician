@@ -25,7 +25,7 @@
 
 <!-- Color Master ist die Farbe von Spotify. Wird für Header und Footer verwendet -->
 
-<!-- ToDo: Aktiven Link anders darstellen; Titel vertikal zentrieren -->
+<!-- ToDo: Aktiven Link anders darstellen; Impressum verlinken in beiden Menüs bei Kontakt und im Footer -->
 <body class="min-h-screen flex flex-col">
     <header>
         <nav class="bg-master">
@@ -46,9 +46,16 @@
                         <!-- Navbar Desktop -->
                         <div class="hidden sm:ml-6 sm:block">
                             <div class="flex space-x-4">
-                                <a href="" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent">Startseite</a>
-                                <a href="" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent">Playlist erstellen</a>
-                                <a href="" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent">Kontakt</a> <!-- Optional, kann auf Impressumsseite verweisen -->  
+                                <a href="{% url 'home' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
+                                <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
+                                <a href="" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
+                            </div>
+                        </div>
+
+                        <div class="hidden sm:ml-6 sm:block justify-end">
+                            <div class="flex space-x-4">
+                                <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>
+                                <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                             </div>
                         </div>
                     </div>
@@ -74,18 +81,20 @@
             <!-- Mobiles Menü -->
             <div id="mobilemenu" class="hidden">
                 <div class="space-y-1 px-2 pb-3 pt-2">
-                    <a href="" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent">Startseite</a>
-                    <a href="" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent">Playlist erstellen</a>
-                    <a href="" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent">Kontakt</a> <!-- Optional, siehe oben -->
+                    <a href="{% url 'home' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
+                    <a href="{% url 'spotify_login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
+                    <a href="" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
+                    <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>
+                    <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                 </div>
             </div>
         </nav>
     </header>
 
-<div class="flex-grow mx-auto max-w-7xl px-[clamp(1rem,4vw,6rem)] py-[clamp(1rem,4vw,6rem)]"> <!-- Flex grow damit die Seite voll ausgefüllt ist und der Footer am Ende angezeigt wird -->
-  {% block content %} 
-  {% endblock %}
-</div>
+    <div class="flex-grow mx-auto max-w-7xl px-[clamp(1rem,4vw,6rem)] py-[clamp(1rem,4vw,6rem)]"> <!-- Flex grow damit die Seite voll ausgefüllt ist und der Footer am Ende angezeigt wird -->
+    {% block content %} 
+    {% endblock %}
+    </div>
 
     <!-- Footer mit Link zum Impressum -->
     <footer class="bg-master text-text-primary p-2">
@@ -96,7 +105,7 @@
                 </div>
                 <div class="flex items-center justify-center sm:justify-end">
                     <nav>
-                        <a href="" class="hover:text-text-accent">Impressum</a>
+                        <a href="" class="hover:text-text-accent transition">Impressum</a>
                     </nav>
                 </div>
             </div>

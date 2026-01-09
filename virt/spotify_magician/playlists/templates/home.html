@@ -14,42 +14,55 @@
     <div class="mt-12">
         <h1 class="font-semibold text-xl">Wähle deine neue Playlist</h1>
         <div class="grid md:grid-cols-2 gap-10">
-            <div class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl">
+            <a href="{% url 'spotify_login' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
                 <img src="{% static '/img/Favoritenplaylist.jpeg' %}" alt="Bild Favoritenplaylist" class="w-full h-48 sm:h-60 object-cover">
                 <div class="m-4">
                     <h2 class="font-medium text-lg">Playlist mit den neuesten Songs deiner Lieblingskünstler</h2>
                     <p>{% lorem 1 b random %}</p>
                 </div>
-            </div>
-            <div class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl">
+            </a>
+            <a href="{% url 'spotify_login' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
                 <img src="{% static '/img/Joggingplaylist.jpeg' %}" alt="Bild Joggingplaylist" class="w-full h-48 sm:h-60 object-cover">
                 <div class="m-4">
                     <h2 class="font-medium text-lg">Jogging Playlist</h2>
                     <p>{% lorem 1 b random %}</p>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
     <!-- FAQ -->
-    <div class="mt-12">
+    <div class="my-12">
         <h1 class="font-semibold text-xl">FAQ</h1>
-        <div class="space-y-12">
-            <div class="">
-                <h2 class="mt-8 font-medium text-lg">1. Frage</h2>
-                <p class="opacity-75">{% lorem 1 b random %}</p>
+        <div class="space-y-10">
+            <div class="pb-1 border-b border-border-light">
+                <h2 class="mt-8 font-medium text-lg">1. Wie verbinde ich meinen Spotify-Account?</h2>
+                <p class="opacity-75 max-h-full">Klicke auf der Startseite einfach auf den Button "Login". Du wirst sicher zur offiziellen Spotify-Seite weitergeleitet. Dort bestätigst du den Zugriff. Wir erhalten niemals dein Passwort, sondern nur einen digitalen Schlüssel (Token), um Playlists für dich zu erstellen.</p>
             </div>
-            <div class="">
-                <h2 class="mt-8 font-medium text-lg">2. Frage</h2>
-                <p class="opacity-75">{% lorem 1 b random %}</p>
+            <div class="faq pb-1 border-b border-border-light">
+                <h2 class="mt-8 font-medium text-lg">2. Welche Funktionen bietet ihr an?</h2>
+                <p class="opacity-75 max-h-full">Wir ermöglichen es dir vollautomatisiert eine Playlist deiner Lieblingssongs deiner Lieblingskünstler oder eine Jogging Playlist zu erstellen. </p>
             </div>
+                <div class="faq pb-1 border-b border-border-light">
+                <h2 class="mt-8 font-medium text-lg">3. Was macht die "Jogging-Playlist" besonders?</h2>
+                <p class="opacity-75 max-h-full">Anders als normale Playlists berücksichtigt unser Algorithmus deinen Laufrhythmus: <br>
+                    - Du gibst deinen gewünschten BPM-Bereich (z. B. 140–160 Schläge pro Minute) an. <br>
+                    - Wir durchsuchen deine Bibliothek nach passenden Songs. <br>
+                    - Die Playlist wird automatisch aufsteigend sortiert. Sie beginnt langsam zum Aufwärmen und steigert das Tempo für deine intensiven Phasen an Ende.</p>
+            </div>
+                <div class="faq pb-1 border-b border-border-light">
+                <h2 class="mt-8 font-medium text-lg">4. Meine erstellte Playlist ist leer oder sehr kurz. Warum?</h2>
+                <p class="opacity-75 max-h-full">Das passiert, wenn deine Filter zu strikt sind. Wenn du z. B. einen BPM-Bereich von 170–180 wählst, aber hauptsächlich langsame Musik hörst, finden wir keine Treffer. </p>
+            </div>
+                <div class="faq pb-1 border-b border-border-light">
+                <h2 class="mt-8 font-medium text-lg">5. Werden meine Daten gespeichert?</h2>
+                <p class="opacity-75 max-h-full">Wir speichern nur das Nötigste, um die App am Laufen zu halten (deinen Zugriffs-Token). Wir speichern keine Musikdateien und keine Passwörter. Mehr dazu findest du unten im Privacy Disclaimer.</p>
+            </div>
+                <div class="faq pb-1 border-b border-border-light">
+                <h2 class="mt-8 font-medium text-lg">6. Wie kann ich die Verbindung trennen?</h2>
+                <p class="opacity-75 max-h-full">Du kannst jederzeit in deinem Spotify-Account unter "Apps" den Zugriff für "Playlist Magician" widerrufen. Danach haben wir keinen Zugriff mehr auf deine Daten.</p>
         </div>
     </div>
-
-    <div class="flex flex-col">
-        {% for x in data %}
-        <div class="text-black">{{ x }}</div>
-        {% endfor %}
-    </div>
+<script src="{% static '/functions.js' %}"></script>
 </body>
 {% endblock %}
