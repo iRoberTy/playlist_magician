@@ -59,7 +59,7 @@
                     <div class="">
                         <div class="hidden sm:ml-6 sm:block">
                             <div class="flex space-x-4">
-                                {% if request.session.access_code %}
+                                {% if request.session.access_token %}
                                 <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                                 {% else %}
                                 <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>

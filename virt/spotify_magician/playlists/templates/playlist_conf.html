@@ -4,7 +4,8 @@
 
 {% block content %}
 
-<main class="min-h-screen bg-base px-4 py-12 text-white space-y-16">
+<div class="inset-0 fixed bg-gray-200 size-full -z-20"></div>
+<main class="px-1 lg:px-4 lg:py-6 text-black flex flex-col lg:flex-row gap-10">
 
   <!-- ============================= -->
   <!-- FAVORITEN PLAYLIST -->
@@ -13,7 +14,7 @@
     <form id="favPlaylistForm"
           method="post"
           action="{% url 'playlist_fav_songs' %}"
-          class="w-full max-w-xl bg-card border border-border-light
+          class="w-full max-w-xl bg-card/25 border border-border-light
                  rounded-xl shadow-lg p-8 space-y-8">
 
       {% csrf_token %}
@@ -46,7 +47,7 @@
           max="50"
           required
           value="5"
-          class="w-full rounded-lg bg-card-light border border-border-light
+          class="w-full rounded-lg bg-card border border-border-light
                  px-4 py-2 outline-none focus:ring-2 focus:ring-accent"
         >
       </div>
@@ -64,7 +65,7 @@
           min="10"
           max="100"
           value="50"
-          class="w-full rounded-lg bg-card-light border border-border-light
+          class="w-full rounded-lg bg-card border border-border-light
                  px-4 py-2 outline-none focus:ring-2 focus:ring-accent"
         >
       </div>
@@ -85,7 +86,7 @@
     <form id="joggingPlaylistForm"
           method="post"
           action="{% url 'jogging_playlist' %}"
-          class="w-full max-w-xl bg-card border border-border-light
+          class="w-full max-w-xl bg-card/25 border border-border-light
                 rounded-xl shadow-lg p-8 space-y-8">
 
       {% csrf_token %}
@@ -115,7 +116,7 @@
         <select name="source_playlists"
                 multiple required
                 size="5"
-                class="w-full bg-card-light border border-border-light
+                class="w-full bg-card border border-border-light
                       rounded-lg px-4 py-2
                       outline-none focus:ring-2 focus:ring-accent">
 
@@ -140,14 +141,14 @@
         <div class="space-y-1">
           <label class="block text-sm font-medium">BPM Minimum <span class="text-xs text-gray-500">> 0</span></label>
           <input name="bpm_min" type="number" value="100"
-                class="w-full bg-card-light border border-border-light outline-none focus:ring-2 focus:ring-accent
+                class="w-full bg-card border border-border-light outline-none focus:ring-2 focus:ring-accent
                         rounded-lg px-4 py-2">
         </div>
 
         <div class="space-y-1">
           <label class="block text-sm font-medium">BPM Maximum <span class="text-xs text-gray-500">< 300</span></label>
           <input name="bpm_max" type="number" value="160"
-                class="w-full bg-card-light border border-border-light outline-none focus:ring-2 focus:ring-accent
+                class="w-full bg-card border border-border-light outline-none focus:ring-2 focus:ring-accent
                         rounded-lg px-4 py-2"> 
         </div>
       </div>
@@ -165,7 +166,7 @@
           Maximale Gesamtlaufzeit (Minuten) <span class="text-xs text-gray-500">10 - 200</span>
         </label>
         <input name="max_playtime" type="number" value="60" min="10" max="200"
-              class="w-full bg-card-light border border-border-light outline-none focus:ring-2 focus:ring-accent
+              class="w-full bg-card border border-border-light outline-none focus:ring-2 focus:ring-accent
                       rounded-lg px-4 py-2">
       </div>
 
@@ -204,7 +205,7 @@
         </a>
 
         <a href="{% url 'home' %}"
-           class="w-full rounded-lg bg-card-light cursor-pointer
+           class="w-full rounded-lg bg-card cursor-pointer
                   hover:bg-border-light
                   text-white font-medium py-2 transition">
           Zurück zur Startseite
