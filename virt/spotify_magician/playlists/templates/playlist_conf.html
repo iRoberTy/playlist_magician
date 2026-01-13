@@ -1,0 +1,267 @@
+{% extends "master.html" %}
+
+{% block title %}Spotify Magician — Playlist-Erstellung{% endblock %}
+
+{% block content %}
+
+<main class="min-h-screen bg-base px-4 py-12 text-white space-y-16">
+
+  <!-- ============================= -->
+  <!-- FAVORITEN PLAYLIST -->
+  <!-- ============================= -->
+  <section class="flex justify-center">
+    <form id="favPlaylistForm"
+          method="post"
+          action="{% url 'playlist_fav_songs' %}"
+          class="w-full max-w-xl bg-card border border-border-light
+                 rounded-xl shadow-lg p-8 space-y-8">
+
+      {% csrf_token %}
+
+      <div class="space-y-2">
+        <div class="flex justify-between items-center gap-2">
+          <h1 class="text-2xl font-semibold">
+            Lieblingskünstler-Playlist 
+            
+          </h1>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-8 text-master">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          </svg>
+        </div>
+        <p class="text-sm text-gray-500">
+          Basierend auf deinen meistgehörten Künstlern.
+        </p>
+      </div>
+
+      <div class="space-y-1">
+        <label for="fav_artist_count" class="block text-sm font-medium">
+          Anzahl der Lieblingskünstler <span class="text-xs text-gray-500"> 1-50</span>
+        </label>
+
+        <input
+          id="fav_artist_count"
+          name="fav_artist_count"
+          type="number"
+          min="1"
+          max="50"
+          required
+          value="5"
+          class="w-full rounded-lg bg-card-light border border-border-light
+                 px-4 py-2 outline-none focus:ring-2 focus:ring-accent"
+        >
+      </div>
+
+      <div class="space-y-1">
+        <label for="song_count" class="block text-sm font-medium">
+          Playlist Max Anzahl der Songs <span class="text-xs text-gray-500"> 10-100</span>
+        </label>
+
+        <input
+          id="song_count"
+          name="song_count"
+          type="number"
+          required
+          min="10"
+          max="100"
+          value="50"
+          class="w-full rounded-lg bg-card-light border border-border-light
+                 px-4 py-2 outline-none focus:ring-2 focus:ring-accent"
+        >
+      </div>
+
+      <button id="favSubmitBtn"
+              type="submit"
+              class="w-full rounded-lg bg-master hover:bg-accent cursor-pointer
+                     py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+        Playlist erstellen
+      </button>
+    </form>
+  </section>
+
+  <!-- ============================= -->
+  <!-- JOGGING PLAYLIST -->
+  <!-- ============================= -->
+  <section class="flex justify-center">
+    <form id="joggingPlaylistForm"
+          method="post"
+          action="{% url 'jogging_playlist' %}"
+          class="w-full max-w-xl bg-card border border-border-light
+                rounded-xl shadow-lg p-8 space-y-8">
+
+      {% csrf_token %}
+
+      <div class="space-y-2">
+        <div class="flex justify-between items-center gap-2">
+          <h2 class="text-2xl font-semibold">
+            Jogging-Playlist
+          </h2>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8 text-master">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z" />
+          </svg>        
+        </div>
+        <p class="text-sm text-gray-500">
+          Musik abgestimmt auf Tempo, Energie und Laufdauer.
+          <br> BPM aufsteigend sortiert.
+        </p>
+      </div>
+
+      <!-- 🔹 QUELL-PLAYLISTS -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium">
+          Eigene Spotify-Playlists auswählen
+        </label>
+
+        <select name="source_playlists"
+                multiple required
+                size="5"
+                class="w-full bg-card-light border border-border-light
+                      rounded-lg px-4 py-2
+                      outline-none focus:ring-2 focus:ring-accent">
+
+          {% for playlist in playlists %}
+            <option value="{{ playlist.id }}">
+              {{ playlist.name }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <p class="text-xs text-gray-500">
+          Halte <strong>Strg</strong> (Windows/Linux) oder <strong>Cmd</strong> (Mac) gedrückt,
+          um mehrere Playlists auszuwählen.
+        </p>
+        <p class="text-xs text-gray-500">
+          Auf Basis dieser Playlists wird die Jogging-Playlist erstellt.
+        </p>
+      </div>
+
+      <!-- BPM -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="space-y-1">
+          <label class="block text-sm font-medium">BPM Minimum <span class="text-xs text-gray-500">> 0</span></label>
+          <input name="bpm_min" type="number" value="100"
+                class="w-full bg-card-light border border-border-light outline-none focus:ring-2 focus:ring-accent
+                        rounded-lg px-4 py-2">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-sm font-medium">BPM Maximum <span class="text-xs text-gray-500">< 300</span></label>
+          <input name="bpm_max" type="number" value="160"
+                class="w-full bg-card-light border border-border-light outline-none focus:ring-2 focus:ring-accent
+                        rounded-lg px-4 py-2"> 
+        </div>
+      </div>
+
+      <!-- Energie -->
+      <div>
+        <label class="block text-sm font-medium">Energielevel Minimum</label>
+        <input name="energy_level" type="range" min="0" max="100" value="60"
+              class="w-full accent-accent">
+      </div>
+
+      <!-- Dauer -->
+      <div class="space-y-1">
+        <label class="block text-sm font-medium">
+          Maximale Gesamtlaufzeit (Minuten) <span class="text-xs text-gray-500">10 - 200</span>
+        </label>
+        <input name="max_playtime" type="number" value="60" min="10" max="200"
+              class="w-full bg-card-light border border-border-light outline-none focus:ring-2 focus:ring-accent
+                      rounded-lg px-4 py-2">
+      </div>
+
+      <button id="joggingSubmitBtn"
+              type="submit"
+              class="w-full rounded-lg bg-master hover:bg-accent
+                    py-2 font-medium transition cursor-pointer
+                    disabled:opacity-50 disabled:cursor-not-allowed">
+        Jogging-Playlist erstellen
+      </button>
+    </form>
+  </section>
+
+
+  <!-- SUCCESS MODAL -->
+  <div id="successModal"
+       class="fixed inset-0 hidden items-center justify-center
+              bg-black/60 backdrop-blur-sm">
+
+    <div class="bg-card border border-border-light
+                rounded-xl shadow-xl p-8 w-full max-w-md text-center space-y-6">
+
+      <div class="text-success text-3xl font-bold">
+        Playlist Erstellt!
+      </div>
+
+      <div class="flex flex-col gap-3">
+
+        <a id="playlistLink"
+           href="#"
+           target="_blank"
+           class="w-full rounded-lg bg-success cursor-pointer
+                  hover:opacity-90
+                  text-white font-medium py-2 transition">
+                  Playlist auf Spotify öffnen
+        </a>
+
+        <a href="{% url 'home' %}"
+           class="w-full rounded-lg bg-card-light cursor-pointer
+                  hover:bg-border-light
+                  text-white font-medium py-2 transition">
+          Zurück zur Startseite
+        </a>
+
+        <button onclick="location.reload()"
+                class="text-sm text-gray-400 hover:text-white cursor-pointer">
+          Erstelle weitere Playlist
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+  async function handleSubmit(formId, buttonId) {
+    const form = document.getElementById(formId);
+    const btn = document.getElementById(buttonId);
+  
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = "Wird erstellt...";
+  
+      const formData = new FormData(form);
+  
+      const response = await fetch(form.action, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+        },
+        body: formData,
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        document.getElementById("playlistLink").href = data.playlist_url;
+        document.getElementById("successModal").classList.remove("hidden");
+        document.getElementById("successModal").classList.add("flex");
+      } else {
+        btn.disabled = false;
+        btn.textContent = "Playlist erstellen";
+        if (data.error) {
+           alert("Fehler: " + data.error); 
+        }
+        else { 
+          alert("Fehler bei der Erstellung."); 
+        }
+      }
+    });
+  }
+  
+  handleSubmit("favPlaylistForm", "favSubmitBtn");
+  handleSubmit("joggingPlaylistForm", "joggingSubmitBtn");
+</script>
+  
+{% endblock %}
