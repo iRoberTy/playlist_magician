@@ -16,7 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # dein-app-name bei deployment ändern
-ALLOWED_HOSTS = ['dein-app-name.onrender.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = []
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -25,7 +25,7 @@ ALLOWED_HOSTS = ['dein-app-name.onrender.com', '127.0.0.1', 'localhost']
 SECRET_KEY = 'django-insecure-9+n7*u!^rfus)cr-vts9mfobd450la=2j@mt42k1=-d8f^@w@3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG') == 'True'
+DEBUG = True
 
 # Application definition
 
@@ -115,9 +115,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_URL = 'static/'
+#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -127,11 +127,11 @@ LOGIN_URL = 'spotify_login'
 SPOTIFY_CLIENT_ID = "b90fcd35292d4b59983b191d99496714"
 SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"
 SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
-SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
-SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
-SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
+#SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
+#SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
+#SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
 
-if not DEBUG:
+'''if not DEBUG:
     # Erzwingt HTTPS (leitet http Anfragen auf https um)
     SECURE_SSL_REDIRECT = True
     
@@ -143,12 +143,12 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000 # 1 Jahr
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-
+'''
 # Datenbank Konfiguration für Render (automatisch)
 # Ersetzt die lokale SQLite DB, wenn wir auf Render sind
-DATABASES = {
+'''DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///db.sqlite3',
         conn_max_age=600
     )
-}
+}'''

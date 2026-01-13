@@ -14,14 +14,14 @@
     <div class="mt-12">
         <h1 class="font-semibold text-xl">Wähle deine neue Playlist</h1>
         <div class="grid md:grid-cols-2 gap-10">
-            <a href="{% url 'spotify_login' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
+            <a href="{% url 'playlist_conf' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
                 <img src="{% static '/img/Favoritenplaylist.jpeg' %}" alt="Bild Favoritenplaylist" class="w-full h-48 sm:h-60 object-cover">
                 <div class="m-4">
                     <h2 class="font-medium text-lg">Playlist mit den neuesten Songs deiner Lieblingskünstler</h2>
                     <p>{% lorem 1 b random %}</p>
                 </div>
             </a>
-            <a href="{% url 'spotify_login' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
+            <a href="{% url 'playlist_conf' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
                 <img src="{% static '/img/Joggingplaylist.jpeg' %}" alt="Bild Joggingplaylist" class="w-full h-48 sm:h-60 object-cover">
                 <div class="m-4">
                     <h2 class="font-medium text-lg">Jogging Playlist</h2>
