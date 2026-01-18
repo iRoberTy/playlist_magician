@@ -81,10 +81,10 @@ WSGI_APPLICATION = 'spotify_magician.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
 
@@ -130,9 +130,9 @@ LOGIN_URL = 'spotify_login'
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID") #"b90fcd35292d4b59983b191d99496714"
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET") #"0110ec5d705f42e396e6f5f91b11ea12"
 SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "https://playlist-magician.onrender.com/callback/")
-#Deploy SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
-#SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
-#SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
+SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
+SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
+SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
 
 if not DEBUG:
     # Erzwingt HTTPS (leitet http Anfragen auf https um)
