@@ -12,20 +12,27 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+# python-dotenv laden, damit es auch lokal funktioniert (falls vorhanden)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # dein-app-name bei deployment ändern
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'playlist-magician.onrender.com'] #renderapp
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9+n7*u!^rfus)cr-vts9mfobd450la=2j@mt42k1=-d8f^@w@3'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'key-for-dev-only' #&y2**)+_w32&x6e@=c!yfu&=+j6yv-_7p@#fru_8uux&lhmv7k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG') == 'True'
 
 # Application definition
 
@@ -41,8 +48,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware", # für Bilder braucht Django whitenoise
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,34 +111,30 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'spotify_login'
-SPOTIFY_CLIENT_ID = "b90fcd35292d4b59983b191d99496714"
-SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
-#SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID") #"b90fcd35292d4b59983b191d99496714"
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET") #"0110ec5d705f42e396e6f5f91b11ea12"
+SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8000/callback/")
+#Deploy SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
 #SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
 #SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
 
-'''if not DEBUG:
+if not DEBUG:
     # Erzwingt HTTPS (leitet http Anfragen auf https um)
     SECURE_SSL_REDIRECT = True
     
@@ -143,12 +146,3 @@ SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
     SECURE_HSTS_SECONDS = 31536000 # 1 Jahr
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-'''
-# Datenbank Konfiguration für Render (automatisch)
-# Ersetzt die lokale SQLite DB, wenn wir auf Render sind
-'''DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600
-    )
-}'''
