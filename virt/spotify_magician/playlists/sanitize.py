@@ -15,15 +15,15 @@ class Jogging_Playlist_Form(forms.Form):
     def clean(self):
         cleaned = super().clean()
 
-        bpm_min = cleaned.get("target_bpm_min")
-        bpm_max = cleaned.get("target_bpm_max")
+        bpm_min = cleaned.get("bpm_min")
+        bpm_max = cleaned.get("bpm_max")
 
         # Only validate if both fields are present
         if bpm_min is not None and bpm_max is not None:
             if bpm_min >= bpm_max:
                 self.add_error(
-                    "target_bpm_min",
-                    "Minimum BPM must be smaller than maximum BPM."
+                    "bpm_min",
+                    "Minimum BPM muss kleiner sein als maximum BPM."
                 )
 
         return cleaned

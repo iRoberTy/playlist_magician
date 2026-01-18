@@ -183,10 +183,10 @@
 
   <!-- SUCCESS MODAL -->
   <div id="successModal"
-       class="fixed inset-0 hidden items-center justify-center
+       class="fixed inset-0 hidden items-center justify-center text-black
               bg-black/60 backdrop-blur-sm">
 
-    <div class="bg-card border border-border-light
+    <div class="bg-card/25 border border-border-light
                 rounded-xl shadow-xl p-8 w-full max-w-md text-center space-y-6">
 
       <div class="text-success text-3xl font-bold">
@@ -200,14 +200,14 @@
            target="_blank"
            class="w-full rounded-lg bg-success cursor-pointer
                   hover:opacity-90
-                  text-white font-medium py-2 transition">
+                  font-medium py-2 transition">
                   Playlist auf Spotify öffnen
         </a>
 
         <a href="{% url 'home' %}"
            class="w-full rounded-lg bg-card cursor-pointer
-                  hover:bg-border-light
-                  text-white font-medium py-2 transition">
+                  hover:bg-card/50
+                  font-medium py-2 transition">
           Zurück zur Startseite
         </a>
 

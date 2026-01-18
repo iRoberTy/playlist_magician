@@ -1,6 +1,7 @@
 import random
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.urls import reverse
 from .sanitize import *
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -98,6 +99,10 @@ def spotify_login(request):
 
     request.session["code_verifier"] = code_verifier
     
+    next_url = request.GET.get('next')
+    if next_url:
+        request.session['next_url'] = next_url  # In Session speichern
+    
     # State für CSRF Schutz empfohlen (hier der Einfachheit halber optional, aber Best Practice)
     state = secrets.token_urlsafe(16)
     request.session["oauth_state"] = state
@@ -175,7 +180,7 @@ def spotify_callback(request):
     # --------------------------------
 
     # get ?next= from the return URL
-    next_url = request.GET.get('next')
+    next_url = request.session.pop('next_url', None)
     if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
         return redirect(next_url)
     return redirect('home')  # fallback if no next param
@@ -187,7 +192,9 @@ def playlist_conf(request):
     user_id = request.session.get("user_id")
     
     if not access_token and not user_id:
-        return redirect("spotify_login")
+        # Aktuelle URL als 'next' Parameter anhängen
+        next_url = request.get_full_path()
+        return redirect(f"{reverse('spotify_login')}?next={next_url}")
     
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -404,8 +411,7 @@ def jogging_playlist(request):
     # Sanitize User Input
     form = Jogging_Playlist_Form(request.POST)
     if not form.is_valid():
-        print(form.errors)
-        return JsonResponse({"success": False, "error": "Invalid form data", "details": form.errors})
+        return JsonResponse({"success": False, "error": form.errors["bpm_min"] if form.errors else "Eingabedaten falsch!"})
     bpm_min = form.cleaned_data["bpm_min"]
     bpm_max = form.cleaned_data["bpm_max"]
     energy_level = form.cleaned_data["energy_level"] / 100  # Spotify: 0.0–1.0
@@ -420,7 +426,7 @@ def jogging_playlist(request):
     # 1. Tracks aus allen Playlists sammeln
     # -----------------------------
     tracks = []
-
+    data = []
     for playlist_id in base_playlists:
         url = f"{SPOTIFY_API_BASE}/playlists/{str(playlist_id)}/tracks"
         params = {"limit": 100}
@@ -432,6 +438,7 @@ def jogging_playlist(request):
                 if track and track.get("id"):
                     tracks.append(track)
             url = r.get("next")
+            data = r["items"]
 
     if not tracks:
         return JsonResponse({"success": False, "error": "Keine Tracks gefunden"})
@@ -480,6 +487,7 @@ def jogging_playlist(request):
         if bpm_min <= f["tempo"] <= bpm_max and f["energy"] >= energy_level:
             filtered.append({
                 "id": track["id"],
+                "name": track["name"],
                 "tempo": f["tempo"],
                 "duration": track["duration_ms"]
             })
@@ -521,12 +529,17 @@ def jogging_playlist(request):
     # -----------------------------
     # 6. Build final tracks list from best window
     # -----------------------------
+    ids = []
     final_tracks = []
     if best_window:
         start, end = best_window
         for t in filtered[start:end+1]:
             final_tracks.append(f"spotify:track:{t['id']}")
+            ids.append({"id": t["id"], "name": t["name"], "tempo": t["tempo"]})
             
+    for id in ids:
+        print(id)   
+        
     final_tracks = list(reversed(final_tracks)) # Weil Spotify in Spotify der erste Song ganz unten ist
 
     # -----------------------------
