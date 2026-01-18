@@ -29,7 +29,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'playlist-magician.onrender.com'] #re
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'key-for-dev-only' #&y2**)+_w32&x6e@=c!yfu&=+j6yv-_7p@#fru_8uux&lhmv7k'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'key-for-dev-only') #&y2**)+_w32&x6e@=c!yfu&=+j6yv-_7p@#fru_8uux&lhmv7k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True'
