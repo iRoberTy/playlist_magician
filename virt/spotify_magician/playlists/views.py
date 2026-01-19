@@ -1,22 +1,19 @@
 import random
 from django.shortcuts import render, redirect
 from django.conf import settings
-from django.urls import reverse
 from .sanitize import *
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout
 from django.utils.http import url_has_allowed_host_and_scheme
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.utils.timezone import make_aware
-import time
+from django.http import JsonResponse
 import requests
 import base64
 import hashlib
 import secrets
 import urllib.parse
+from .models import SpotifyUser
 
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token" # Refresh Access Token
@@ -24,7 +21,6 @@ SPOTIFY_API_BASE = "https://api.spotify.com/v1"
 
 # Should be in Settings
 SPOTIFY_CLIENT_ID = settings.SPOTIFY_CLIENT_ID
-# SPOTIFY_CLIENT_SECRET = "0110ec5d705f42e396e6f5f91b11ea12"    # Not needed for PKCE flow -
 SPOTIFY_REDIRECT_URI = settings.SPOTIFY_REDIRECT_URI
 
 def home(request):
@@ -48,29 +44,20 @@ def refresh_access_token(refresh_token):
     return response.json()
 
 # Helper Function for getting Access Token
-def is_access_token_valid(expires_in):
-    if not expires_in:
-        return False
-
-    return time.time() < expires_in # Returns True if valid
+def is_access_token_expired(user):
+    return timezone.now() > user.token_expires_at # Returns True if expired
 
 # Main Function for getting Access Token (after login)
 def get_valid_access_token(request):
-    access_token = request.session.get("access_token")
-    refresh_token = request.session.get("refresh_token")
-    expires_in = request.session.get("expires_in")
-
-    # --- DB LOGIK (AUSKOMMENTIERT FÜR SPÄTER) ---
-    # if not refresh_token:
-    #    # Versuch, Token aus DB zu laden anhand User-Session oder ID
-    #    pass
-    # --------------------------------------------
-
+    user = request.user
+    
+    access_token = user.access_token
+    refresh_token = user.refresh_token
 
     # If access token exists AND is still valid → use it
-    if access_token and expires_in and is_access_token_valid(expires_in):
+    if access_token and not is_access_token_expired(user):
         return access_token
-
+    
     # Otherwise refresh
     try:
         token_data = refresh_access_token(refresh_token)
@@ -78,16 +65,17 @@ def get_valid_access_token(request):
         print(f"Refresh failed: {e}")
         return None
 
-    request.session["access_token"] = token_data["access_token"]
-    expires_in = timezone.now() + timedelta(seconds=token_data["expires_in"])
-    request.session["expires_in"] = int(expires_in.timestamp())
+    expires_at = timezone.now() + timedelta(seconds=token_data["expires_in"])
 
-    # Spotify may rotate refresh tokens
-    if "refresh_token" in token_data:
-        request.session["refresh_token"] = token_data["refresh_token"]
-        # --- DB UPDATE (AUSKOMMENTIERT) ---
-        # Update user model with new refresh token
-        # ----------------------------------
+    # --- Update DB ---
+    SpotifyUser.objects.filter(spotify_id=user.id).update(
+        access_token=token_data["access_token"],
+        token_expires_at=expires_at
+    )
+    
+    # Spotify may rotate refresh tokens --- DB UPDATE ---
+    if "refresh_token" in token_data and token_data["refresh_token"] != request.user.refresh_token:
+        request.user.refresh_token = token_data["refresh_token"]
 
     return token_data["access_token"]
 
@@ -147,10 +135,6 @@ def spotify_callback(request):
     
     token_data = response.json()
     
-    # Store Data in Session
-    request.session["access_token"] = token_data["access_token"]
-    request.session["refresh_token"] = token_data["refresh_token"]
-    
     headers = {"Authorization": f"Bearer {token_data["access_token"]}"}
     user = requests.get(f"{SPOTIFY_API_BASE}/me", headers=headers)
     # Check if succesfully got user_id or hit rate Limit..
@@ -158,26 +142,23 @@ def spotify_callback(request):
         return redirect("home")
     user = user.json()
     
-    request.session["user_id"] = user["id"]
-    request.session["market"] = user["country"] # For Region based Tracks ---------------
-    
     expires_in = timezone.now() + timedelta(seconds=token_data.get("expires_in", 3600))
-    request.session["expires_in"] = int(expires_in.timestamp())
-    
-    print(token_data["scope"], token_data["expires_in"])
-    
-    # --- DB SAVE (AUSKOMMENTIERT) ---
-    '''# Get Spotify UserID
-    # Get or create new user
-    user, created = User.objects.update_or_create(
-        id=user_id.json(),
-        #defaults={'access_token': token_data["access_token"], 
-        #        'refresh_token': token_data.get("refresh_token")}
+
+    # --- DB SAVE ---
+    user_db, created = SpotifyUser.objects.update_or_create(
+        spotify_id=user["id"],
+        defaults={
+            'access_token': token_data["access_token"], 
+            'refresh_token': token_data.get("refresh_token"),
+            'country': user["country"],
+            'token_expires_at': expires_in,
+        }
     )
+    if not created:
+        redirect("home")
     
     # Log them in using Django session
-    login(request, user)   # creates the sessionid cookie Django expects'''
-    # --------------------------------
+    login(request, user_db)   # creates the sessionid cookie Django expects
 
     # get ?next= from the return URL
     next_url = request.session.pop('next_url', None)
@@ -185,16 +166,14 @@ def spotify_callback(request):
         return redirect(next_url)
     return redirect('home')  # fallback if no next param
 
-#@login_required # set LOGIN_URL in Settings
-# Not used
+@login_required
 def playlist_conf(request): 
     access_token = get_valid_access_token(request)
-    user_id = request.session.get("user_id")
+    user_id = request.user.spotify_id
     
     if not access_token and not user_id:
-        # Aktuelle URL als 'next' Parameter anhängen
-        next_url = request.get_full_path()
-        return redirect(f"{reverse('spotify_login')}?next={next_url}")
+        # Unknown Error
+        redirect("home")
     
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -202,6 +181,7 @@ def playlist_conf(request):
 
     # Get User playlists
     playlists = requests.get(f"{SPOTIFY_API_BASE}/me/playlists", headers=headers) # <--------------- Very Slow (500ms)
+    
     # Check if succesfully got user_id or hit rate Limit..
     if playlists.status_code != 200:
         return redirect("home")
@@ -222,17 +202,16 @@ def parse_release_date(date_str):
             continue
     return None
 
-# Apply Playlist configuration (Aufgabe 1)
-#@login_required
-@csrf_exempt
+@login_required
 def playlist_fav_songs(request):
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Invalid request"})
 
     access_token = get_valid_access_token(request)
-    user_id = request.session.get("user_id")
+    user_id = request.user.spotify_id
 
     if not access_token or not user_id:
+        # Unknown Error...
         return redirect("spotify_login")
 
     # Sanitize User Input
@@ -249,12 +228,6 @@ def playlist_fav_songs(request):
         "limit": fav_artist_count,
         "offset": 0
     }
-    
-    # --- LOGIK: Playlist Update vs Neu ---
-    # Da wir keine DB haben, schauen wir in die Session, ob wir in DIESER Sitzung schon eine Playlist erstellt haben.
-    playlist_id = request.session.get("current_session_playlist_id")
-    # Falls wir eine DB hätten, würden wir hier:
-    # playlist_id = PlaylistConfig.objects.get(user=user_id).last_playlist_id
     
     artists_resp = requests.get(f"{SPOTIFY_API_BASE}/me/top/artists", headers=headers, params=params) # ---------------- Get fav Artists --------------- (Users: "Get User's Top Items" - endpoint)
     
@@ -277,7 +250,7 @@ def playlist_fav_songs(request):
     for artist in artists_list["items"]:
         params = {
             "include_groups": "album,single,appears_on", # album - single - appears_on - compilation
-            "market": request.session.get("market"),
+            "market": request.user.country,
             "limit": 10, 
             "offset": 0
         }
@@ -319,10 +292,12 @@ def playlist_fav_songs(request):
                 artist_tracks_found += 1
 
     random.shuffle(track_data)
-    #track_data.sort(key=lambda x: parse_release_date(x["date"]) or datetime.min, reverse=True)
     
     final_uris = [t["uri"] for t in track_data]
 
+    # Schauen wir in die Session, ob wir in DIESER Sitzung schon eine Playlist erstellt haben.
+    playlist_id = request.session.get("current_session_playlist_id")
+    
     # Check if Playlist exists
     if playlist_id:
         # Get Playlist Details to verify ownership
@@ -374,9 +349,7 @@ def playlist_fav_songs(request):
         
         playlist_id = create_playlist_resp.json()["id"]
         request.session["current_session_playlist_id"] = playlist_id # Save for this session
-    print(final_uris)
-    # Add Tracks (Replace logic is usually a PUT request with 'uris', but POST adds to bottom)
-    # Um "Update" sauber zu machen, nutzen wir den replace endpoint:
+        
     replace_url = f"{SPOTIFY_API_BASE}/playlists/{playlist_id}/tracks"
     # PUT ersetzt den ganzen Inhalt -> Perfekt für Update
     add_resp = requests.put(replace_url, headers=headers, json={"uris": final_uris}) 
@@ -388,20 +361,17 @@ def playlist_fav_songs(request):
         "success": True,
         "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}"
     })
-# Bug in playlist_fav_songs: If not enough artist tracks found--> Max playlist songs not reached
-# Bei Ungerader Zahl der Max Songs 22 --> findet nur 20
 
-
-#@login_required # If using DB
-@csrf_exempt        
+@login_required  
 def jogging_playlist(request):
     if request.method != "POST":
         return JsonResponse({"success": False, "error": "Invalid request"})
 
     access_token = get_valid_access_token(request)
-    user_id = request.session.get("user_id")
+    user_id = request.user.spotify_id
 
     if not access_token or not user_id:
+        # Unknown Error
         return redirect("spotify_login")
 
     # -----------------------------
@@ -426,7 +396,6 @@ def jogging_playlist(request):
     # 1. Tracks aus allen Playlists sammeln
     # -----------------------------
     tracks = []
-    data = []
     for playlist_id in base_playlists:
         url = f"{SPOTIFY_API_BASE}/playlists/{str(playlist_id)}/tracks"
         params = {"limit": 100}
@@ -435,10 +404,9 @@ def jogging_playlist(request):
             r = requests.get(url, headers=headers, params=params).json()
             for item in r["items"]:
                 track = item.get("track")
-                if track and track.get("id"):
+                if track and track.get("id") and track not in tracks:
                     tracks.append(track)
             url = r.get("next")
-            data = r["items"]
 
     if not tracks:
         return JsonResponse({"success": False, "error": "Keine Tracks gefunden"})
@@ -582,8 +550,7 @@ def jogging_playlist(request):
     })
 
 def logout_view(request):
-    request.session.flush()
     # DB logout -----------
-    # logout(request)
+    logout(request)
     return redirect("home")
 

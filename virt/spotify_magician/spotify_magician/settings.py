@@ -23,7 +23,9 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # dein-app-name bei deployment ändern
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'playlist-magician.onrender.com'] #renderapp
+ALLOWED_HOSTS = ['playlist-magician.onrender.com'] #renderapp
+
+AUTH_USER_MODEL = 'playlists.SpotifyUser'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -32,7 +34,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'playlist-magician.onrender.com'] #re
 SECRET_KEY = os.environ.get('SECRET_KEY', 'key-for-dev-only') #&y2**)+_w32&x6e@=c!yfu&=+j6yv-_7p@#fru_8uux&lhmv7k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG') == 'True'
+DEBUG = os.environ.get('DEBUG') == 'False'
 
 # Application definition
 
@@ -127,14 +129,14 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'spotify_login'
-SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID") #"b90fcd35292d4b59983b191d99496714"
-SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET") #"0110ec5d705f42e396e6f5f91b11ea12"
-SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8000/callback/")
-#Deploy SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
-#SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
-#SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "b90fcd35292d4b59983b191d99496714") #"b90fcd35292d4b59983b191d99496714"
+SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "https://playlist-magician.onrender.com/callback/")
 
 if not DEBUG:
+    SESSION_COOKIE_SECURE = True   # Nur über HTTPS senden
+    SESSION_COOKIE_HTTPONLY = True # JavaScript kann nicht darauf zugreifen (Schutz vor XSS)
+    SESSION_COOKIE_SAMESITE = 'Lax' # Schutz vor CSRF
+
     # Erzwingt HTTPS (leitet http Anfragen auf https um)
     SECURE_SSL_REDIRECT = True
     
@@ -143,6 +145,7 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     
     # Browser soll sich merken: "Diese Seite nur noch sicher aufrufen" (HSTS)
-    SECURE_HSTS_SECONDS = 31536000 # 1 Jahr
+    #SECURE_HSTS_SECONDS = 31536000 # 1 Jahr
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    
