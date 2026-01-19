@@ -46,9 +46,9 @@
                         <!-- Navbar Desktop -->
                         <div class="hidden md:ml-6 md:block">
                             <div class="flex space-x-4">
-                                <a href="{% url 'home' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
-                                <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
-                                <a href="" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
+                                <a href="{% url 'home' %}" class="{% if request.resolver_match.view_name == 'home' %}bg-accent/50{% endif %} rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
+                                <a href="{% url 'playlist_conf' %}" class="{% if request.resolver_match.view_name == 'playlist_conf' %}bg-accent/50{% endif %} rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
+                                <a href="{% url 'impressum' %}" class="{% if request.resolver_match.view_name == 'impressum' %}bg-accent/50{% endif %} rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
                             </div>
                         </div>
                     </div>
@@ -57,7 +57,7 @@
                     <div class="">
                         <div class="hidden md:ml-6 md:block">
                             <div class="flex space-x-4">
-                                {% if request.session.access_token %}
+                                {% if request.user.is_authenticated %}
                                 <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                                 {% else %}
                                 <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>
@@ -87,9 +87,9 @@
             <div id="mobilemenu" class="hidden md:hidden">
                 <div class="space-y-1 px-2 pb-3 pt-2">
                     <a href="{% url 'home' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
-                    <a href="{% url 'spotify_login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
-                    <a href="" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
-                    {% if request.session.access_token %}
+                    <a href="{% url 'playlist_conf' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
+                    <a href="{% url 'impressum' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
+                    {% if request.user.is_authenticated %}
                     <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                     {% else %}
                     <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>
@@ -113,7 +113,7 @@
                 </div>
                 <div class="flex items-center justify-center sm:justify-end">
                     <nav>
-                        <a href="" class="hover:text-text-accent transition">Impressum</a>
+                        <a href="{% url 'impressum' %}" class="hover:text-text-accent transition">Impressum</a>
                     </nav>
                 </div>
             </div>

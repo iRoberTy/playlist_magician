@@ -4,74 +4,190 @@
 
 {% block content %}
 {% load static %}
-<body>
-    <!-- Überschrift und Erklärungstext -->
-    <div class="pt=8">
-        <h1 class="font-semibold text-xl">Willkommen bei Spotify Magician</h1>
-        <p class="mt=8">
-           <br>Spotify ist toll. Wir machen es noch besser. <br><br>
-            Stört es dich auch, selbst nach neuen Liedern suchen zu müssen und deine Playlists ständig aktualisieren zu müssen? Wir nehmen dir die Arbeit ab.
-            Wir erstellen dir auf Knopfdruck neue Playlists mit neuen Liedern. Entweder die neusten Hits deiner Lieblingskünstler oder für dich relevante Songs
-            basierend auf deinem Hörverhalten. Du musst dich nur einmal über Spotify anmelden und schon können wir dir neue Playlists generieren.
-        </p>
-    </div>
-    <!-- Vorstellung der Funktionen -->
-    <div class="mt-12">
-        <h1 class="font-semibold text-xl">Wähle deine neue Playlist</h1>
-        <div class="grid md:grid-cols-2 gap-10">
-            <a href="{% url 'playlist_conf' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
-                <img src="{% static '/img/Favoritenplaylist.jpeg' %}" alt="Bild Favoritenplaylist" class="w-full h-48 sm:h-60 object-cover">
-                <div class="m-4">
-                    <h2 class="font-medium text-lg">Playlist mit den neuesten Songs deiner Lieblingskünstler</h2>
-                    <p>Wir suchen für dich die neuesten Hits deiner Lieblingskünstler und packen sie dir in eine Playlist. Du kannst dich zurücklehnen und deine 
+<main class="max-w-6xl mx-auto px-1 pb-8">
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-lg p-4 sm:p-8 mb-12">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-1 h-12 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Willkommen bei Spotify Magician
+            </h1>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <p class="text-gray-700 leading-relaxed text-lg">
+                Spotify ist toll. Wir machen es noch besser.
+            </p>
+            <p class="text-gray-600 leading-relaxed mt-4">
+                Stört es dich auch, selbst nach neuen Liedern suchen zu müssen und deine Playlists ständig aktualisieren zu müssen? Wir nehmen dir die Arbeit ab.
+                Wir erstellen dir auf Knopfdruck neue Playlists mit neuen Liedern. Entweder die neusten Hits deiner Lieblingskünstler oder für dich relevante Songs
+                basierend auf deinem Hörverhalten. Du musst dich nur einmal über Spotify anmelden und schon können wir dir neue Playlists generieren.
+            </p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="mb-12">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-1 h-10 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Wähle deine neue Playlist
+            </h2>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Card 1: Favoritenplaylist -->
+            <a href="{% url 'playlist_conf' %}" class="group bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300">
+                <div class="relative overflow-hidden">
+                    <img src="{% static '/img/Favoritenplaylist.jpeg' %}" alt="Bild Favoritenplaylist" class="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
+                            Playlist mit den neuesten Songs deiner Lieblingskünstler
+                        </h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Wir suchen für dich die neuesten Hits deiner Lieblingskünstler und packen sie dir in eine Playlist. Du kannst dich zurücklehnen und deine 
                         Lieblingskünstler genießen. Das beste daran? Die Playlist aktualisiert sich automatisch. Du hörst immer die aktuellsten Lieder.
                     </p>
+                    <div class="mt-4 flex items-center text-blue-600 font-medium group-hover:gap-2 transition-all">
+                        <span>Mehr erfahren</span>
+                        <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
                 </div>
             </a>
-            <a href="{% url 'playlist_conf' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
-                <img src="{% static '/img/Joggingplaylist.jpeg' %}" alt="Bild Joggingplaylist" class="w-full h-48 sm:h-60 object-cover">
-                <div class="m-4">
-                    <h2 class="font-medium text-lg">Jogging Playlist</h2>
-                    <p>Du möchtest eine Playlist die dich bei deinem Training begleitet? Kein Problem. Stelle die gewünschte Dauer und den gewünschten BPM-Bereich ein
+
+            <!-- Card 2: Jogging Playlist -->
+            <a href="{% url 'playlist_conf' %}" class="group bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-purple-300">
+                <div class="relative overflow-hidden">
+                    <img src="{% static '/img/Joggingplaylist.jpeg' %}" alt="Bild Joggingplaylist" class="w-full h-60 object-cover group-hover:scale-105 transition-transform duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-semibold text-xl text-gray-800 group-hover:text-purple-600 transition-colors">
+                            Jogging Playlist
+                        </h3>
+                    </div>
+                    <p class="text-gray-600 leading-relaxed">
+                        Du möchtest eine Playlist die dich bei deinem Training begleitet? Kein Problem. Stelle die gewünschte Dauer und den gewünschten BPM-Bereich ein
                         und wir suchen dir die passenden Lieder zusammen. Ein Klick und du kannst direkt loslegen.
                     </p>
+                    <div class="mt-4 flex items-center text-purple-600 font-medium group-hover:gap-2 transition-all">
+                        <span>Mehr erfahren</span>
+                        <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
                 </div>
             </a>
         </div>
-    </div>
+    </section>
 
-    <!-- FAQ -->
-    <div class="my-12">
-        <h1 class="font-semibold text-xl">FAQ</h1>
-        <div class="space-y-10">
-            <div class="pb-1 border-b border-border-light">
-                <h2 class="mt-8 font-medium text-lg">1. Wie verbinde ich meinen Spotify-Account?</h2>
-                <p class="opacity-75 max-h-full">Klicke auf der Startseite einfach auf den Button "Login". Du wirst sicher zur offiziellen Spotify-Seite weitergeleitet. Dort bestätigst du den Zugriff. Wir erhalten niemals dein Passwort, sondern nur einen digitalen Schlüssel (Token), um Playlists für dich zu erstellen.</p>
-            </div>
-            <div class="faq pb-1 border-b border-border-light">
-                <h2 class="mt-8 font-medium text-lg">2. Welche Funktionen bietet ihr an?</h2>
-                <p class="opacity-75 max-h-full">Wir ermöglichen es dir vollautomatisiert eine Playlist deiner Lieblingssongs deiner Lieblingskünstler oder eine Jogging Playlist zu erstellen. </p>
-            </div>
-                <div class="faq pb-1 border-b border-border-light">
-                <h2 class="mt-8 font-medium text-lg">3. Was macht die "Jogging-Playlist" besonders?</h2>
-                <p class="opacity-75 max-h-full">Anders als normale Playlists berücksichtigt unser Algorithmus deinen Laufrhythmus: <br>
-                    - Du gibst deinen gewünschten BPM-Bereich (z. B. 140–160 Schläge pro Minute) an. <br>
-                    - Wir durchsuchen deine Bibliothek nach passenden Songs. <br>
-                    - Die Playlist wird automatisch aufsteigend sortiert. Sie beginnt langsam zum Aufwärmen und steigert das Tempo für deine intensiven Phasen an Ende.</p>
-            </div>
-                <div class="faq pb-1 border-b border-border-light">
-                <h2 class="mt-8 font-medium text-lg">4. Meine erstellte Playlist ist leer oder sehr kurz. Warum?</h2>
-                <p class="opacity-75 max-h-full">Das passiert, wenn deine Filter zu strikt sind. Wenn du z. B. einen BPM-Bereich von 170–180 wählst, aber hauptsächlich langsame Musik hörst, finden wir keine Treffer. </p>
-            </div>
-                <div class="faq pb-1 border-b border-border-light">
-                <h2 class="mt-8 font-medium text-lg">5. Werden meine Daten gespeichert?</h2>
-                <p class="opacity-75 max-h-full">Wir speichern nur das Nötigste, um die App am Laufen zu halten (deinen Zugriffs-Token). Wir speichern keine Musikdateien und keine Passwörter. Mehr dazu findest du unten im Privacy Disclaimer.</p>
-            </div>
-                <div class="faq pb-1 border-b border-border-light">
-                <h2 class="mt-8 font-medium text-lg">6. Wie kann ich die Verbindung trennen?</h2>
-                <p class="opacity-75 max-h-full">Du kannst jederzeit in deinem Spotify-Account unter "Apps" den Zugriff für "Playlist Magician" widerrufen. Danach haben wir keinen Zugriff mehr auf deine Daten.</p>
+    <!-- FAQ Section -->
+    <section class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-lg p-8">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-1 h-10 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                FAQ
+            </h2>
         </div>
-    </div>
-</body>
+
+        <div class="space-y-4">
+            <!-- FAQ Item 1 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm font-bold">1</span>
+                    Wie verbinde ich meinen Spotify-Account?
+                </h3>
+                <p class="text-gray-600 text-sm leading-relaxed ml-10">
+                    Klicke auf der Startseite einfach auf den Button "Login". Du wirst sicher zur offiziellen Spotify-Seite weitergeleitet. Dort bestätigst du den Zugriff. Wir erhalten niemals dein Passwort, sondern nur einen digitalen Schlüssel (Token), um Playlists für dich zu erstellen.
+                </p>
+            </div>
+
+            <!-- FAQ Item 2 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-shadow">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-sm font-bold">2</span>
+                    Welche Funktionen bietet ihr an?
+                </h3>
+                <p class="text-gray-600 text-sm leading-relaxed ml-10">
+                    Wir ermöglichen es dir vollautomatisiert eine Playlist deiner Lieblingssongs deiner Lieblingskünstler oder eine Jogging Playlist zu erstellen.
+                </p>
+            </div>
+
+            <!-- FAQ Item 3 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm font-bold">3</span>
+                    Was macht die "Jogging-Playlist" besonders?
+                </h3>
+                <div class="text-gray-600 text-sm leading-relaxed ml-10">
+                    <p class="mb-2">Anders als normale Playlists berücksichtigt unser Algorithmus deinen Laufrhythmus:</p>
+                    <ul class="space-y-1">
+                        <li class="flex items-start gap-2">
+                            <span class="text-blue-500 mt-0.5">•</span>
+                            <span>Du gibst deinen gewünschten BPM-Bereich (z. B. 140–160 Schläge pro Minute) an.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-blue-500 mt-0.5">•</span>
+                            <span>Wir durchsuchen deine Bibliothek nach passenden Songs.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-blue-500 mt-0.5">•</span>
+                            <span>Die Playlist wird automatisch aufsteigend sortiert. Sie beginnt langsam zum Aufwärmen und steigert das Tempo für deine intensiven Phasen am Ende.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- FAQ Item 4 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-shadow">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-sm font-bold">4</span>
+                    Meine erstellte Playlist ist leer oder sehr kurz. Warum?
+                </h3>
+                <p class="text-gray-600 text-sm leading-relaxed ml-10">
+                    Das passiert, wenn deine Filter zu strikt sind. Wenn du z. B. einen BPM-Bereich von 170–180 wählst, aber hauptsächlich langsame Musik hörst, finden wir keine Treffer.
+                </p>
+            </div>
+
+            <!-- FAQ Item 5 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-sm font-bold">5</span>
+                    Werden meine Daten gespeichert?
+                </h3>
+                <p class="text-gray-600 text-sm leading-relaxed ml-10">
+                    Wir speichern nur das Nötigste, um die App am Laufen zu halten (deinen Zugriffs-Token). Wir speichern keine Musikdateien und keine Passwörter. Mehr dazu findest du unten im Privacy Disclaimer.
+                </p>
+            </div>
+
+            <!-- FAQ Item 6 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-shadow">
+                <h3 class="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+                    <span class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 text-sm font-bold">6</span>
+                    Wie kann ich die Verbindung trennen?
+                </h3>
+                <p class="text-gray-600 text-sm leading-relaxed ml-10">
+                    Du kannst jederzeit in deinem Spotify-Account unter "Apps" den Zugriff für "Playlist Magician" widerrufen. Danach haben wir keinen Zugriff mehr auf deine Daten.
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
 <script src="{% static '/functions.js' %}"></script>
 {% endblock %}

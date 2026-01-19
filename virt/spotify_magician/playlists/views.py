@@ -26,6 +26,9 @@ SPOTIFY_REDIRECT_URI = settings.SPOTIFY_REDIRECT_URI
 def home(request):
     return render(request, "home.html")
 
+def impressum(request):
+    return render(request, "impressum.html")
+
 # Helper Function for getting Access Token
 def refresh_access_token(refresh_token):
     data = {
