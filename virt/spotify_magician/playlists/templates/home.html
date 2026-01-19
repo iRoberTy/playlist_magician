@@ -8,7 +8,12 @@
     <!-- Überschrift und Erklärungstext -->
     <div class="pt=8">
         <h1 class="font-semibold text-xl">Willkommen bei Spotify Magician</h1>
-        <p class="mt=8">{% lorem 2 b random %}</p>
+        <p class="mt=8">
+           <br>Spotify ist toll. Wir machen es noch besser. <br><br>
+            Stört es dich auch, selbst nach neuen Liedern suchen zu müssen und deine Playlists ständig aktualisieren zu müssen? Wir nehmen dir die Arbeit ab.
+            Wir erstellen dir auf Knopfdruck neue Playlists mit neuen Liedern. Entweder die neusten Hits deiner Lieblingskünstler oder für dich relevante Songs
+            basierend auf deinem Hörverhalten. Du musst dich nur einmal über Spotify anmelden und schon können wir dir neue Playlists generieren.
+        </p>
     </div>
     <!-- Vorstellung der Funktionen -->
     <div class="mt-12">
@@ -18,14 +23,18 @@
                 <img src="{% static '/img/Favoritenplaylist.jpeg' %}" alt="Bild Favoritenplaylist" class="w-full h-48 sm:h-60 object-cover">
                 <div class="m-4">
                     <h2 class="font-medium text-lg">Playlist mit den neuesten Songs deiner Lieblingskünstler</h2>
-                    <p>{% lorem 1 b random %}</p>
+                    <p>Wir suchen für dich die neuesten Hits deiner Lieblingskünstler und packen sie dir in eine Playlist. Du kannst dich zurücklehnen und deine 
+                        Lieblingskünstler genießen. Das beste daran? Die Playlist aktualisiert sich automatisch. Du hörst immer die aktuellsten Lieder.
+                    </p>
                 </div>
             </a>
             <a href="{% url 'playlist_conf' %}" class="bg-card rounded-lg overflow-hidden mt-8 shadow-lg hover:bg-card-light hover:shadow-xl transition">
                 <img src="{% static '/img/Joggingplaylist.jpeg' %}" alt="Bild Joggingplaylist" class="w-full h-48 sm:h-60 object-cover">
                 <div class="m-4">
                     <h2 class="font-medium text-lg">Jogging Playlist</h2>
-                    <p>{% lorem 1 b random %}</p>
+                    <p>Du möchtest eine Playlist die dich bei deinem Training begleitet? Kein Problem. Stelle die gewünschte Dauer und den gewünschten BPM-Bereich ein
+                        und wir suchen dir die passenden Lieder zusammen. Ein Klick und du kannst direkt loslegen.
+                    </p>
                 </div>
             </a>
         </div>
@@ -63,6 +72,6 @@
                 <p class="opacity-75 max-h-full">Du kannst jederzeit in deinem Spotify-Account unter "Apps" den Zugriff für "Playlist Magician" widerrufen. Danach haben wir keinen Zugriff mehr auf deine Daten.</p>
         </div>
     </div>
-<script src="{% static '/functions.js' %}"></script>
 </body>
+<script src="{% static '/functions.js' %}"></script>
 {% endblock %}

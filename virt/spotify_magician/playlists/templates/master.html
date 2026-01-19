@@ -29,11 +29,11 @@
 <body class="min-h-screen flex flex-col">
     <header>
         <nav class="bg-master">
-            <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
               
               <!-- Header Elemente -->
               <div class="relative flex h-16 items-center justify-between">
-                    <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                    <div class="flex flex-1 items-center justify-center md:items-stretch md:justify-start">
                         
                         <!-- Logo -->
                         <div class="flex flex-shrink-0 items-center">
@@ -44,22 +44,20 @@
 
 
                         <!-- Navbar Desktop -->
-                        <div class="hidden sm:ml-6 sm:block">
+                        <div class="hidden md:ml-6 md:block">
                             <div class="flex space-x-4">
                                 <a href="{% url 'home' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
-                                <a href="{% url 'playlist_conf' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
+                                <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
                                 <a href="" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
                             </div>
                         </div>
-
-
                     </div>
 
                     
                     <div class="">
-                        <div class="hidden sm:ml-6 sm:block">
+                        <div class="hidden md:ml-6 md:block">
                             <div class="flex space-x-4">
-                                {% if request.user.is_authenticated %}
+                                {% if request.session.access_token %}
                                 <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                                 {% else %}
                                 <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>
@@ -67,7 +65,7 @@
                             </div>
                         </div>
                         <!--Button für mobiles Menü-->
-                        <div class="absolute inset-y-0 right-0 flex items-center sm:hidden">
+                        <div class="absolute inset-y-0 right-0 flex items-center md:hidden">
                             <button id="button" type="button" onclick="menubutton()" class="relative inline-flex items-center justify-center rounded-md p-2 text-text-primary hover:bg-accent hover:text-text-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu">
                                 <span class="absolute -inset-0.5"></span>
                                 <span class="sr-only">Open main menu</span>
@@ -86,12 +84,12 @@
             </div>
        
             <!-- Mobiles Menü -->
-            <div id="mobilemenu" class="hidden">
+            <div id="mobilemenu" class="hidden md:hidden">
                 <div class="space-y-1 px-2 pb-3 pt-2">
                     <a href="{% url 'home' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Startseite</a>
                     <a href="{% url 'spotify_login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Playlist erstellen</a>
                     <a href="" class="block rounded-md px-3 py-2 text-base font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Kontakt</a>
-                    {% if request.user.is_authenticated %}
+                    {% if request.session.access_token %}
                     <a href="{% url 'logout' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Logout</a>
                     {% else %}
                     <a href="{% url 'spotify_login' %}" class="rounded-md px-3 py-2 text-sm font-medium text-text-primary hover:bg-accent hover:text-text-accent transition">Login</a>
@@ -101,7 +99,7 @@
         </nav>
     </header>
 
-    <div class="flex-grow mx-auto max-w-7xl px-[clamp(1rem,4vw,6rem)] py-[clamp(1rem,4vw,6rem)]"> <!-- Flex grow damit die Seite voll ausgefüllt ist und der Footer am Ende angezeigt wird -->
+    <div class="flex-grow mx-auto max-w-7xl px-[clamp(1rem,4vw,6rem)] py-[clamp(1rem,4vw,6rem)]">
     {% block content %} 
     {% endblock %}
     </div>
@@ -121,6 +119,6 @@
             </div>
         </div>
     </footer>
-   <script src="{% static '/functions.js' %}"></script>
   </body>
+  <script src="{% static '/functions.js' %}"></script>
 </html>
